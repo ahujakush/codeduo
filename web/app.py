@@ -1,6 +1,7 @@
 """
 CodingDuo - AI Intermediate Code Optimization Web Platform.
-Features 6 famous language boilerplate templates, compiler optimization passes,
+Features 6 famous language boilerplates, compiler optimization passes,
+real-time code mistake detection with (i) info badges, 1-click 'Apply' fixes,
 and teacher-style audio walkthroughs powered by ElevenLabs.
 """
 
@@ -20,13 +21,14 @@ from bot.memory.chat_memory import chat_memory
 from web.services.elevenlabs_service import elevenlabs_service
 from web.services.boilerplates import LANGUAGE_BOILERPLATES
 from web.services.teacher_explainer import generate_teacher_explanation
+from web.services.code_checker import analyze_code_for_errors
 
 logger = logging.getLogger("codingduo")
 
 app = FastAPI(
     title="CodingDuo - AI Intermediate Code Optimizer",
     description="Interactive platform for applying compiler optimization techniques to Intermediate Code.",
-    version="2.2.0",
+    version="2.3.0",
 )
 
 app.add_middleware(
@@ -44,6 +46,12 @@ class OptimizeRequest(BaseModel):
     code: str
     pass_type: Optional[str] = "all_passes"
     session_id: Optional[str] = None
+    language: Optional[str] = "python"
+
+
+class CheckCodeRequest(BaseModel):
+    code: str
+    language: Optional[str] = "python"
 
 
 class TTSRequest(BaseModel):
@@ -89,6 +97,13 @@ async def get_stats():
         "gems": 750,
         "xp": 1420,
     }
+
+
+@app.post("/api/check-code")
+async def check_code(req: CheckCodeRequest):
+    """Analyze code for mistakes, syntax errors, and return line numbers, explanations, and 1-click fixes."""
+    res = await analyze_code_for_errors(req.code, req.language or "python")
+    return res
 
 
 @app.post("/api/optimize")

@@ -102,13 +102,13 @@
               <span class="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-green-100 text-green-800">
                 Compiler Classroom
               </span>
-              <span class="text-xs font-bold text-gray-400">• Interactive Learning</span>
+              <span class="text-xs font-bold text-gray-400">• Interactive Error Detection &amp; Fix</span>
             </div>
             <h2 class="text-xl sm:text-2xl font-black text-gray-900 mt-0.5">
               Professor's Code Optimization Lab
             </h2>
             <p id="teacher-status-message" class="text-sm font-bold text-gray-500 mt-1">
-              Select one of the 6 famous languages below to load its starter boilerplate code, or paste your own. I'll explain the compiler optimization passes for you!
+              Select one of the 6 famous languages below to load its starter boilerplate code. If there's any mistake, click the ⓘ info button and apply the fix with 1 click!
             </p>
           </div>
         </div>
@@ -122,7 +122,7 @@
       </div>
     </div>
 
-    <!-- 6 Famous Language Boilerplates Selector (Replacing the old presets toolbar) -->
+    <!-- 6 Famous Language Boilerplates Selector -->
     <div class="card-duo p-5 bg-white mb-6 border-2 border-[#E5E5E5]">
       <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
         <div class="flex items-center space-x-2">
@@ -163,7 +163,7 @@
       </div>
     </div>
 
-    <!-- Pass Strategy Selector Pills (Tactile 3D Buttons) -->
+    <!-- Pass Strategy Selector Pills -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 select-none">
       <button data-pass="all_passes" class="btn-3d btn-neutral active py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
         <span>🚀</span>
@@ -186,7 +186,7 @@
     <!-- Tab Buttons: Code Editor vs Control Flow Graph Upload -->
     <div class="flex border-b-2 border-gray-200 mb-6 space-x-4">
       <button data-tab="editor" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-[#58CC02] text-[#58CC02] flex items-center space-x-2">
-        <span>💻 Code & IR Editor</span>
+        <span>💻 Code &amp; IR Editor</span>
       </button>
       <button data-tab="photo" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-transparent text-gray-400 hover:text-gray-600 flex items-center space-x-2">
         <span>📸 Scan Flowgraph / Whiteboard</span>
@@ -196,7 +196,7 @@
     <!-- Tab 1: Code Editor View -->
     <div id="tab-editor-view" class="card-duo p-6 sm:p-8 mb-8 bg-white">
       
-      <!-- Active File Header -->
+      <!-- Active File Header & Check Code Button -->
       <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
         <div class="flex items-center space-x-2 text-xs font-bold text-gray-500 font-mono">
           <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
@@ -204,7 +204,15 @@
           <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
           <span id="active-filename" class="ml-2 text-gray-700 font-bold">optimizer_demo.py</span>
         </div>
-        <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Editable Source / IR</span>
+
+        <div class="flex items-center space-x-2">
+          <!-- Real-Time Check Code Button -->
+          <button id="check-code-btn" class="btn-3d btn-neutral py-1.5 px-3 text-xs font-black flex items-center space-x-1.5" title="Analyze code for syntax mistakes">
+            <span>🔍</span>
+            <span>Check Code</span>
+          </button>
+          <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Editable Source</span>
+        </div>
       </div>
 
       <!-- Code Textarea -->
@@ -215,6 +223,11 @@
           placeholder="# Select a boilerplate above or paste your code here..."
           class="w-full p-4 rounded-2xl border-2 border-gray-200 focus:border-[#1CB0F6] focus:border-b-4 outline-none font-mono text-sm leading-relaxed text-gray-800 placeholder-gray-400 transition resize-y bg-gray-50/50"
         ></textarea>
+      </div>
+
+      <!-- Interactive Inline Mistakes & 1-Click Fixes Panel (Displays when mistakes are found) -->
+      <div id="inline-errors-container" class="mt-4 space-y-3 hidden">
+        <!-- Dynamically populated with error lines, (i) buttons, and Apply buttons -->
       </div>
 
       <!-- Action Footer -->
@@ -245,7 +258,7 @@
           📷
         </div>
         <div>
-          <p class="font-extrabold text-base text-gray-700">Click to upload or drag & drop CFG image</p>
+          <p class="font-extrabold text-base text-gray-700">Click to upload or drag &amp; drop CFG image</p>
           <p class="text-xs font-bold text-gray-400">PNG, JPG, JPEG, WEBP up to 10MB</p>
         </div>
         <input type="file" id="file-input" class="hidden" accept="image/*" />
@@ -307,7 +320,7 @@
         </div>
       </div>
 
-      <!-- Teacher's Monologue Transcript Card (Expandable / Readable) -->
+      <!-- Teacher's Monologue Transcript Card -->
       <div id="teacher-transcript-card" class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/70 border-2 border-blue-200 hidden">
         <div class="flex items-start space-x-3">
           <span class="text-2xl">👩‍🏫</span>

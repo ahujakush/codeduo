@@ -114,3 +114,32 @@ def test_compiler_speech_sanitizer():
     assert "Common Subexpression Elimination" in cleaned
     assert "Dead Code Elimination" in cleaned
     assert "temporary 1" in cleaned
+
+
+def test_check_code_detects_broken_python(client):
+    broken_code = "def compute(a, b)\n    x = 4 * + a\n    for i in range 100:\n        total += i"
+    response = client.post(
+        "/api/check-code",
+        json={"code": broken_code, "language": "python"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["has_errors"] is True
+    assert len(data["errors"]) > 0
+    first_err = data["errors"][0]
+    assert "line_number" in first_err
+    assert "faulty_line" in first_err
+    assert "suggested_line" in first_err
+    assert "message" in first_err
+
+
+def test_check_code_clean_code(client):
+    clean_code = "def compute(a, b):\n    return a + b"
+    response = client.post(
+        "/api/check-code",
+        json={"code": clean_code, "language": "python"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["has_errors"] is False
+    assert len(data["errors"]) == 0

@@ -159,3 +159,60 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #a8a8a8;
 }
+
+/* Inline Code Mistake & 1-Click Fix Styles */
+.btn-apply {
+  background-color: var(--duo-green);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 3px 0 var(--duo-green-shadow);
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+  user-select: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.btn-apply:hover {
+  background-color: var(--duo-green-hover);
+}
+.btn-apply:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--duo-green-shadow);
+}
+
+.info-circle-btn {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 9999px;
+  background-color: var(--duo-blue);
+  color: #ffffff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+  font-size: 0.875rem;
+  box-shadow: 0 3px 0 var(--duo-blue-shadow);
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+.info-circle-btn:hover {
+  background-color: var(--duo-blue-hover);
+}
+.info-circle-btn:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 var(--duo-blue-shadow);
+}
+
+.inline-error-card {
+  background-color: #fef2f2;
+  border: 2px solid #fca5a5;
+  border-radius: 1rem;
+  box-shadow: 0 3px 0 #fca5a5;
+  transition: all 0.2s ease;
+}

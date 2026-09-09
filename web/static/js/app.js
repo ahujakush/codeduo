@@ -1,6 +1,7 @@
 /**
  * CodingDuo - Interactive Web Application Logic
- * 6 Famous Languages Boilerplate & Teacher-Style Voice Walkthrough
+ * 6 Famous Languages Boilerplate, Inline Error Inspection (ⓘ), 1-Click 'Apply' Fix,
+ * and Teacher-Style Voice Walkthrough
  */
 
 // --- Global State ---
@@ -20,6 +21,7 @@ const state = {
   activeInputCode: "",
   teacherTranscript: "",
   boilerplates: {},
+  detectedErrors: [],
 };
 
 // --- Web Audio Synthesizer (Tactile Sound Effects) ---
@@ -169,7 +171,9 @@ function loadLanguageBoilerplate(langKey) {
     filenameEl.textContent = template.filename;
   }
 
-  // Update button active states
+  // Clear any active errors when changing templates
+  clearInlineErrors();
+
   document.querySelectorAll(".lang-boilerplate-btn").forEach((btn) => {
     const isTarget = btn.getAttribute("data-lang") === langKey;
     btn.classList.toggle("active", isTarget);
@@ -177,9 +181,175 @@ function loadLanguageBoilerplate(langKey) {
   });
 
   setTeacherMessage(
-    `Loaded ${template.name} boilerplate! Notice the constant multiplication and loop invariant? Click 'Apply Optimization Passes' to see the compiler optimize it!`
+    `Loaded ${template.name} boilerplate! If you make any typo, click 🔍 Check Code to see the ⓘ info button and Apply fix!`
   );
 }
+
+// --- Inline Error Detection & 1-Click Fix System ---
+
+async function checkCodeForMistakes(showCleanNotice = true) {
+  const inputEl = document.getElementById("ir-code-input");
+  const code = inputEl ? inputEl.value.trim() : "";
+
+  if (!code) return false;
+
+  duoAudio.playClick();
+  setTeacherMessage("Checking code for syntax mistakes and typos...");
+
+  try {
+    const res = await fetch("/api/check-code", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: code,
+        language: state.currentLang,
+      }),
+    });
+
+    const data = await res.json();
+    if (data.has_errors && data.errors && data.errors.length > 0) {
+      state.detectedErrors = data.errors;
+      renderInlineErrors(data.errors);
+      setTeacherMessage(
+        `⚠️ Found mistake on line ${data.errors[0].line_number}! Click the ⓘ button and press 'Apply' to fix the line instantly!`
+      );
+      return true;
+    } else {
+      clearInlineErrors();
+      if (showCleanNotice) {
+        setTeacherMessage("✅ Code looks clean! No syntax errors detected. Ready for compiler optimization passes.");
+      }
+      return false;
+    }
+  } catch (err) {
+    console.warn("Check code error:", err);
+    return false;
+  }
+}
+
+function clearInlineErrors() {
+  state.detectedErrors = [];
+  const container = document.getElementById("inline-errors-container");
+  if (container) {
+    container.innerHTML = "";
+    container.classList.add("hidden");
+  }
+}
+
+function renderInlineErrors(errors) {
+  const container = document.getElementById("inline-errors-container");
+  if (!container) return;
+
+  container.innerHTML = "";
+  container.classList.remove("hidden");
+
+  errors.forEach((err, idx) => {
+    const card = document.createElement("div");
+    card.id = `error-card-${err.line_number}`;
+    card.className = "inline-error-card p-4";
+
+    const encodedSuggested = encodeURIComponent(err.suggested_line);
+
+    card.innerHTML = `
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        
+        <!-- Left: Line Badge & (i) Info Button & Summary -->
+        <div class="flex items-start sm:items-center space-x-3">
+          <!-- Line number badge -->
+          <span class="px-2.5 py-1 rounded-lg bg-red-100 text-red-700 font-mono font-black text-xs border border-red-200 flex-shrink-0">
+            Line ${err.line_number}
+          </span>
+
+          <!-- (i) Info Circle Button -->
+          <button 
+            class="info-circle-btn flex-shrink-0" 
+            title="Inspect Mistake Details" 
+            onclick="toggleErrorDetails(${err.line_number})"
+          >
+            ⓘ
+          </button>
+
+          <!-- Error Message -->
+          <div class="text-xs sm:text-sm font-extrabold text-red-800">
+            ${escapeHtml(err.message)}
+          </div>
+        </div>
+
+        <!-- Right: 1-Click 'Apply' Button -->
+        <div class="flex items-center space-x-2 self-end sm:self-center">
+          <button 
+            onclick="applyLineFix(${err.line_number}, '${encodedSuggested}')" 
+            class="btn-apply"
+            title="Apply suggested fix to this line"
+          >
+            <span>✓</span>
+            <span>Apply</span>
+          </button>
+        </div>
+
+      </div>
+
+      <!-- Expandable Code Diff Comparison -->
+      <div id="error-details-${err.line_number}" class="mt-3 pt-3 border-t border-red-200 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
+        <div class="p-2.5 rounded-xl bg-red-100/70 text-red-900 border border-red-200">
+          <span class="text-[10px] uppercase font-black tracking-wider text-red-600 block mb-1">❌ Mistake on Line ${err.line_number}:</span>
+          <code class="whitespace-pre-wrap">${escapeHtml(err.faulty_line)}</code>
+        </div>
+        <div class="p-2.5 rounded-xl bg-green-100/70 text-green-900 border border-green-200">
+          <span class="text-[10px] uppercase font-black tracking-wider text-green-600 block mb-1">💡 Corrected Line (Click Apply):</span>
+          <code class="whitespace-pre-wrap font-bold text-green-800">${escapeHtml(err.suggested_line)}</code>
+        </div>
+      </div>
+    `;
+
+    container.appendChild(card);
+  });
+}
+
+function toggleErrorDetails(lineNumber) {
+  duoAudio.playClick();
+  const el = document.getElementById(`error-details-${lineNumber}`);
+  if (el) {
+    el.classList.toggle("hidden");
+  }
+}
+
+// --- 1-Click Apply Line Fix Handler ---
+window.applyLineFix = function(lineNumber, encodedSuggestedLine) {
+  const suggestedLine = decodeURIComponent(encodedSuggestedLine);
+  const inputEl = document.getElementById("ir-code-input");
+
+  if (!inputEl) return;
+
+  const lines = inputEl.value.split("\n");
+  if (lineNumber > 0 && lineNumber <= lines.length) {
+    // Replace the exact line with the suggested line
+    lines[lineNumber - 1] = suggestedLine;
+    inputEl.value = lines.join("\n");
+
+    duoAudio.playSuccess();
+
+    // Remove the error card with feedback
+    const card = document.getElementById(`error-card-${lineNumber}`);
+    if (card) {
+      card.style.opacity = "0";
+      card.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        card.remove();
+        // Check if all errors resolved
+        const container = document.getElementById("inline-errors-container");
+        if (container && container.children.length === 0) {
+          container.classList.add("hidden");
+          setTeacherMessage(`✅ Line ${lineNumber} fixed! All syntax errors resolved. Code is ready to optimize!`);
+        } else {
+          setTeacherMessage(`✅ Line ${lineNumber} fixed!`);
+        }
+      }, 200);
+    }
+  }
+};
+
+window.toggleErrorDetails = toggleErrorDetails;
 
 // --- Optimize Code Action Handler ---
 async function handleOptimize() {
@@ -188,6 +358,13 @@ async function handleOptimize() {
 
   if (!code) {
     inputEl.focus();
+    return;
+  }
+
+  // Pre-flight check: if there's an obvious syntax mistake, display it with (i) + Apply
+  const hasErrors = await checkCodeForMistakes(false);
+  if (hasErrors) {
+    alert("⚠️ Please review and apply the suggested fix on the mistake highlighted above before compiling!");
     return;
   }
 
@@ -204,6 +381,7 @@ async function handleOptimize() {
       body: JSON.stringify({
         code: code,
         pass_type: state.currentPass,
+        language: state.currentLang,
       }),
     });
 
@@ -296,7 +474,7 @@ async function handlePlayAudio() {
   ttsBtn.disabled = true;
 
   try {
-    // 1. Fetch the intuitive teacher monologue script first so user can read along
+    // 1. Fetch teacher script
     const teacherScriptRes = await fetch("/api/teacher-explanation", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -312,14 +490,13 @@ async function handlePlayAudio() {
       teacherScript = data.teacher_script;
       state.teacherTranscript = teacherScript;
       
-      // Display the teacher's transcript
       if (transcriptCard && transcriptText) {
         transcriptText.textContent = `"${teacherScript}"`;
         transcriptCard.classList.remove("hidden");
       }
     }
 
-    // 2. Stream synthesized audio from ElevenLabs
+    // 2. Stream audio
     const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -422,7 +599,6 @@ async function fetchBoilerplates() {
     const res = await fetch("/api/boilerplates");
     if (res.ok) {
       state.boilerplates = await res.json();
-      // Load default Python template
       loadLanguageBoilerplate("python");
     }
   } catch (e) {
@@ -472,6 +648,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadLanguageBoilerplate(lang);
     });
   });
+
+  // Check Code Button
+  const checkCodeBtn = document.getElementById("check-code-btn");
+  if (checkCodeBtn) {
+    checkCodeBtn.addEventListener("click", () => checkCodeForMistakes(true));
+  }
 
   // Sound Toggle
   const soundBtn = document.getElementById("sound-toggle-btn");
