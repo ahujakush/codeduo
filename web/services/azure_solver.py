@@ -13,30 +13,13 @@ from bot.memory.chat_memory import ChatMessage
 logger = logging.getLogger(__name__)
 
 COMPILER_COACH_PROMPT = """
-You are the AI Intermediate Code Optimization Engine for CodingDuo.
-Your task is to analyze user-submitted Intermediate Code (Three-Address Code / TAC, Quadruples, Static Single Assignment / SSA, LLVM IR, or C-like pseudo-code) and apply compiler optimization passes.
-
-Follow this exact Markdown structure:
-
-### 🔍 1. Intermediate Code Analysis
-- Break down the input basic blocks, temporaries, and expressions.
-- Identify dead variables, redundant computations, invariant code, and algebraic opportunities.
-
-### ⚙️ 2. Step-by-Step Optimization Passes
-- **Pass 1 (Constant Folding & Propagation)**: Show which constants are folded and propagated.
-- **Pass 2 (Common Subexpression Elimination - CSE)**: Identify repeated calculations (e.g. `a + b`, `i * 4`) and show where temporaries are reused.
-- **Pass 3 (Loop Invariant Code Motion & Strength Reduction)**: Hoist loop-invariant calculations outside loop headers; replace expensive operations (e.g., `* 2`, `* 4`) with shifts or additions.
-- **Pass 4 (Dead Code Elimination - DCE)**: Remove unused temporaries and unreachable code.
-
-### 🚀 3. Optimized Intermediate Code
-Provide the clean, final optimized Intermediate Code in a `text` code block.
-
-### 📊 4. Optimization Metrics
-- **Original Instruction Count**: X
-- **Optimized Instruction Count**: Y
-- **Instructions Eliminated**: Z (%)
-- **Temporaries Saved**: N
-- **Hardware Impact**: Lower register pressure, reduced ALU cycles, reduced memory traffic.
+You are a Compiler Intermediate Code Generator.
+Your ONLY job is to transform high-level C++ code into Three-Address Code (TAC).
+STRICT RULES:
+- Output MUST ONLY be the generated Three-Address Code (TAC).
+- Always wrap your TAC output in a ```text Markdown code block.
+- DO NOT perform code optimization or pass explanations.
+- Use explicit temporaries (t1, t2, t3...) and conditional jump labels (L1, L2...).
 """
 
 
@@ -70,7 +53,7 @@ class AzureOpenAISolver(BaseAISolver):
     async def solve_text(
         self, prompt: str, history: Optional[List[ChatMessage]] = None, persona: str = "all_passes"
     ) -> str:
-        system_instruction = COMPILER_COACH_PROMPT + f"\nActive Strategy Focus: {persona.upper()}"
+        system_instruction = COMPILER_COACH_PROMPT
 
         messages = [{"role": "system", "content": system_instruction}]
 
@@ -80,7 +63,7 @@ class AzureOpenAISolver(BaseAISolver):
 
         messages.append({
             "role": "user",
-            "content": f"Please optimize this intermediate code using compiler optimization techniques:\n\n{prompt}"
+            "content": prompt
         })
 
         try:
@@ -104,15 +87,15 @@ class AzureOpenAISolver(BaseAISolver):
     ) -> str:
         system_instruction = (
             COMPILER_COACH_PROMPT
-            + "\nThe user provided an image of a Control Flow Graph (CFG), syntax tree, or handwritten Three-Address Code. "
-            "Extract the Intermediate Code, reconstruct the basic blocks, and apply full optimization passes."
+            + "\nThe user provided an image of C++ code. "
+            "Extract the code and transform it into Three-Address Code (TAC)."
         )
 
         base64_image = base64.b64encode(image_bytes).decode("utf-8")
         data_url = f"data:{mime_type};base64,{base64_image}"
 
         user_text = caption.strip() if caption else (
-            "Extract and optimize the intermediate code / control flow graph shown in this image."
+            "Transform the C++ code in this image into Three-Address Code (TAC)."
         )
 
         messages = [

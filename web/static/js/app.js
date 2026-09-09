@@ -155,35 +155,88 @@ function copyCode(btn, encodedCode) {
   }, 2000);
 }
 
-// --- Load Language Boilerplate Code ---
-function loadLanguageBoilerplate(langKey) {
+// --- Language Boilerplate Preview & Insertion System ---
+
+function setPreviewLanguage(langKey) {
   if (!state.boilerplates[langKey]) return;
   state.currentLang = langKey;
   const template = state.boilerplates[langKey];
 
-  const codeInput = document.getElementById("ir-code-input");
-  const filenameEl = document.getElementById("active-filename");
-
-  if (codeInput) {
-    codeInput.value = template.code;
-  }
-  if (filenameEl) {
-    filenameEl.textContent = template.filename;
-  }
-
-  // Clear any active errors when changing templates
-  clearInlineErrors();
-
+  // Update active state in selector buttons
   document.querySelectorAll(".lang-boilerplate-btn").forEach((btn) => {
     const isTarget = btn.getAttribute("data-lang") === langKey;
     btn.classList.toggle("active", isTarget);
     btn.classList.toggle("border-[#1CB0F6]", isTarget);
   });
 
+  // Update Preview Mode Card
+  const iconEl = document.getElementById("preview-lang-icon");
+  const titleEl = document.getElementById("preview-lang-title");
+  const filenameEl = document.getElementById("preview-filename");
+  const codeBlockEl = document.getElementById("preview-code-block");
+  const activeFilenameEl = document.getElementById("active-filename");
+  const codeInput = document.getElementById("ir-code-input");
+
+  if (iconEl) iconEl.textContent = template.icon;
+  if (titleEl) titleEl.textContent = `${template.name} Starter Boilerplate`;
+  if (filenameEl) filenameEl.textContent = template.filename;
+  if (codeBlockEl) codeBlockEl.textContent = template.code;
+  if (activeFilenameEl) activeFilenameEl.textContent = template.filename;
+
+  if (codeInput && !codeInput.value.trim()) {
+    codeInput.placeholder = `# Press Tab ↹ or click 'INSERT BOILERPLATE' to load ${template.name} starter code...`;
+  }
+
   setTeacherMessage(
-    `Loaded ${template.name} boilerplate! If you make any typo, click 🔍 Check Code to see the ⓘ info button and Apply fix!`
+    `Previewing ${template.name} starter template! Click 'Tab ↹ INSERT BOILERPLATE' or press Tab in the editor to load it.`
   );
 }
+
+function insertBoilerplate() {
+  const template = state.boilerplates[state.currentLang];
+  if (!template) return;
+
+  const codeInput = document.getElementById("ir-code-input");
+  const filenameEl = document.getElementById("active-filename");
+  const insertBtn = document.getElementById("insert-tab-btn");
+  const insertText = document.getElementById("insert-tab-text");
+
+  if (!codeInput) return;
+
+  // Confirm if overwriting existing customized code
+  if (codeInput.value.trim() && codeInput.value.trim() !== template.code.trim()) {
+    const confirmReplace = window.confirm(
+      `Replace existing editor code with ${template.name} starter template?`
+    );
+    if (!confirmReplace) return;
+  }
+
+  codeInput.value = template.code;
+  if (filenameEl) filenameEl.textContent = template.filename;
+
+  clearInlineErrors();
+  duoAudio.playSuccess();
+  codeInput.focus();
+
+  // Temporary feedback on button
+  if (insertText) {
+    const oldText = insertText.textContent;
+    insertText.textContent = "✓ INSERTED!";
+    if (insertBtn) insertBtn.classList.add("bg-emerald-600");
+    setTimeout(() => {
+      insertText.textContent = oldText;
+      if (insertBtn) insertBtn.classList.remove("bg-emerald-600");
+    }, 1500);
+  }
+
+  setTeacherMessage(
+    `✓ Inserted ${template.name} starter boilerplate! Ready for compiling or editing.`
+  );
+}
+
+// Global aliases
+window.loadLanguageBoilerplate = setPreviewLanguage;
+window.insertBoilerplate = insertBoilerplate;
 
 // --- Inline Error Detection & 1-Click Fix System ---
 
@@ -240,15 +293,14 @@ function renderInlineErrors(errors) {
   const container = document.getElementById("inline-errors-container");
   if (!container) return;
 
+  state.detectedErrors = errors;
   container.innerHTML = "";
   container.classList.remove("hidden");
 
   errors.forEach((err, idx) => {
     const card = document.createElement("div");
-    card.id = `error-card-${err.line_number}`;
-    card.className = "inline-error-card p-4";
-
-    const encodedSuggested = encodeURIComponent(err.suggested_line);
+    card.id = `error-card-${idx}`;
+    card.className = "inline-error-card p-4 transition-all duration-300";
 
     card.innerHTML = `
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
@@ -264,7 +316,7 @@ function renderInlineErrors(errors) {
           <button 
             class="info-circle-btn flex-shrink-0" 
             title="Inspect Mistake Details" 
-            onclick="toggleErrorDetails(${err.line_number})"
+            onclick="toggleErrorDetails(${idx})"
           >
             ⓘ
           </button>
@@ -278,19 +330,19 @@ function renderInlineErrors(errors) {
         <!-- Right: 1-Click 'Apply' Button -->
         <div class="flex items-center space-x-2 self-end sm:self-center">
           <button 
-            onclick="applyLineFix(${err.line_number}, '${encodedSuggested}')" 
+            onclick="applyLineFixByIndex(${idx})" 
             class="btn-apply"
             title="Apply suggested fix to this line"
           >
             <span>✓</span>
-            <span>Apply</span>
+            <span>Apply Fix</span>
           </button>
         </div>
 
       </div>
 
       <!-- Expandable Code Diff Comparison -->
-      <div id="error-details-${err.line_number}" class="mt-3 pt-3 border-t border-red-200 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
+      <div id="error-details-${idx}" class="mt-3 pt-3 border-t border-red-200 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs font-mono">
         <div class="p-2.5 rounded-xl bg-red-100/70 text-red-900 border border-red-200">
           <span class="text-[10px] uppercase font-black tracking-wider text-red-600 block mb-1">❌ Mistake on Line ${err.line_number}:</span>
           <code class="whitespace-pre-wrap">${escapeHtml(err.faulty_line)}</code>
@@ -304,51 +356,131 @@ function renderInlineErrors(errors) {
 
     container.appendChild(card);
   });
+
+  // Smoothly scroll error card into view (no browser alert popups!)
+  container.scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
-function toggleErrorDetails(lineNumber) {
+function toggleErrorDetails(idx) {
   duoAudio.playClick();
-  const el = document.getElementById(`error-details-${lineNumber}`);
+  const el = document.getElementById(`error-details-${idx}`);
   if (el) {
     el.classList.toggle("hidden");
   }
 }
 
-// --- 1-Click Apply Line Fix Handler ---
-window.applyLineFix = function(lineNumber, encodedSuggestedLine) {
-  const suggestedLine = decodeURIComponent(encodedSuggestedLine);
-  const inputEl = document.getElementById("ir-code-input");
+// --- 1-Click Apply Line Fix Handler with Robust Matching & Indentation ---
+window.applyLineFixByIndex = function(idx) {
+  const err = state.detectedErrors && state.detectedErrors[idx];
+  if (!err) {
+    console.warn("No error found at index", idx);
+    return;
+  }
 
+  const inputEl = document.getElementById("ir-code-input");
   if (!inputEl) return;
 
-  const lines = inputEl.value.split("\n");
+  const rawCode = inputEl.value;
+  const lines = rawCode.split("\n");
+  const faultyLine = (err.faulty_line || "").trim();
+  const suggestedLine = (err.suggested_line || "").trim();
+  const lineNumber = err.line_number;
+
+  function norm(s) {
+    return (s || "").replace(/[\s;]/g, "").toLowerCase();
+  }
+
+  let targetIndex = -1;
+
+  // 1. Check if line at lineNumber - 1 matches normalized faultyLine
   if (lineNumber > 0 && lineNumber <= lines.length) {
-    // Replace the exact line with the suggested line
-    lines[lineNumber - 1] = suggestedLine;
+    if (norm(lines[lineNumber - 1]) === norm(faultyLine)) {
+      targetIndex = lineNumber - 1;
+    }
+  }
+
+  // 2. Search entire code for exact or normalized match
+  if (targetIndex === -1 && faultyLine) {
+    targetIndex = lines.findIndex((l) => norm(l) === norm(faultyLine));
+  }
+
+  // 3. Search for line containing key substring of faultyLine
+  if (targetIndex === -1 && faultyLine) {
+    const normFaulty = norm(faultyLine);
+    targetIndex = lines.findIndex((l) => {
+      const nl = norm(l);
+      return nl.length > 3 && (nl.includes(normFaulty) || normFaulty.includes(nl));
+    });
+  }
+
+  // 4. Fallback to lineNumber - 1 if within bounds
+  if (targetIndex === -1 && lineNumber > 0 && lineNumber <= lines.length) {
+    targetIndex = lineNumber - 1;
+  }
+
+  if (targetIndex !== -1) {
+    // Preserve original line's indentation
+    const origIndent = (lines[targetIndex].match(/^\s*/) || [""])[0];
+    const finalReplacement = origIndent + suggestedLine.trimStart();
+
+    lines[targetIndex] = finalReplacement;
     inputEl.value = lines.join("\n");
 
+    // Trigger input events so the editor registers the change
+    inputEl.dispatchEvent(new Event("input", { bubbles: true }));
+    inputEl.dispatchEvent(new Event("change", { bubbles: true }));
+
+    // Focus editor and select the replaced line so the user visibly sees it
+    let charOffset = 0;
+    for (let i = 0; i < targetIndex; i++) {
+      charOffset += lines[i].length + 1;
+    }
+    inputEl.focus();
+    inputEl.setSelectionRange(charOffset, charOffset + finalReplacement.length);
+
+    // Tactile audio feedback
     duoAudio.playSuccess();
 
-    // Remove the error card with feedback
-    const card = document.getElementById(`error-card-${lineNumber}`);
+    // Textarea highlight effect
+    inputEl.classList.add("ring-4", "ring-green-400", "bg-green-50/60");
+    setTimeout(() => {
+      inputEl.classList.remove("ring-4", "ring-green-400", "bg-green-50/60");
+    }, 900);
+
+    // Visual card animation and feedback
+    const card = document.getElementById(`error-card-${idx}`);
     if (card) {
-      card.style.opacity = "0";
-      card.style.transform = "scale(0.95)";
+      card.style.transition = "all 0.25s ease";
+      card.style.backgroundColor = "#dcfce7";
+      card.style.borderColor = "#86efac";
+      card.innerHTML = `
+        <div class="flex items-center space-x-2 text-green-800 font-black text-xs py-1">
+          <span class="text-base">✓</span>
+          <span>Applied fix: <code>${escapeHtml(finalReplacement.trim())}</code></span>
+        </div>
+      `;
+
       setTimeout(() => {
-        card.remove();
-        // Check if all errors resolved
-        const container = document.getElementById("inline-errors-container");
-        if (container && container.children.length === 0) {
-          container.classList.add("hidden");
-          setTeacherMessage(`✅ Line ${lineNumber} fixed! All syntax errors resolved. Code is ready to optimize!`);
-        } else {
-          setTeacherMessage(`✅ Line ${lineNumber} fixed!`);
-        }
-      }, 200);
+        card.style.opacity = "0";
+        card.style.transform = "scale(0.95)";
+        setTimeout(() => {
+          card.remove();
+          // Remove from state without shifting other indices
+          state.detectedErrors[idx] = null;
+          const container = document.getElementById("inline-errors-container");
+          if (container && container.querySelectorAll(".inline-error-card").length === 0) {
+            container.classList.add("hidden");
+            setTeacherMessage(`✅ Line fixed! Code lines properly formatted and ready to optimize.`);
+          } else {
+            setTeacherMessage(`✅ Line fixed! Code updated in editor.`);
+          }
+        }, 200);
+      }, 700);
     }
   }
 };
 
+window.applyLineFix = window.applyLineFixByIndex;
 window.toggleErrorDetails = toggleErrorDetails;
 
 // --- Optimize Code Action Handler ---
@@ -361,10 +493,14 @@ async function handleOptimize() {
     return;
   }
 
-  // Pre-flight check: if there's an obvious syntax mistake, display it with (i) + Apply
+  // Pre-flight check: if there's a syntax mistake, show inline error card (NO browser alert popups!)
   const hasErrors = await checkCodeForMistakes(false);
   if (hasErrors) {
-    alert("⚠️ Please review and apply the suggested fix on the mistake highlighted above before compiling!");
+    setTeacherMessage("⚠️ Syntax error detected! Please review and click 'Apply Fix' on the error card below before compiling.");
+    const container = document.getElementById("inline-errors-container");
+    if (container) {
+      container.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     return;
   }
 
@@ -561,7 +697,7 @@ function displaySolution(solutionText, optimizer) {
   if (!resultCard || !contentEl) return;
 
   resultCard.classList.remove("hidden");
-  badgeEl.textContent = `OPTIMIZATION PASSES APPLIED (${optimizer})`;
+  badgeEl.textContent = `TAC GENERATED (${optimizer})`;
   contentEl.innerHTML = renderFormattedSolution(solutionText);
 
   // Scroll smoothly to solution
@@ -599,7 +735,7 @@ async function fetchBoilerplates() {
     const res = await fetch("/api/boilerplates");
     if (res.ok) {
       state.boilerplates = await res.json();
-      loadLanguageBoilerplate("python");
+      setPreviewLanguage("python");
     }
   } catch (e) {
     console.warn("Could not load boilerplates:", e);
@@ -630,24 +766,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Pass Strategy Switching
-  document.querySelectorAll("[data-pass]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      duoAudio.playClick();
-      state.currentPass = btn.getAttribute("data-pass");
-      document.querySelectorAll("[data-pass]").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
-    });
-  });
 
-  // 6 Language Boilerplate Buttons
+
+  // Famous Language Boilerplate Preview Buttons
   document.querySelectorAll(".lang-boilerplate-btn").forEach((btn) => {
     btn.addEventListener("click", () => {
       duoAudio.playClick();
       const lang = btn.getAttribute("data-lang");
-      loadLanguageBoilerplate(lang);
+      setPreviewLanguage(lang);
     });
   });
+
+  // Insert Tab ↹ Button Click
+  const insertTabBtn = document.getElementById("insert-tab-btn");
+  if (insertTabBtn) {
+    insertTabBtn.addEventListener("click", () => {
+      insertBoilerplate();
+    });
+  }
 
   // Check Code Button
   const checkCodeBtn = document.getElementById("check-code-btn");
@@ -720,10 +856,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   const ttsBtn = document.getElementById("tts-btn");
   if (ttsBtn) ttsBtn.addEventListener("click", handlePlayAudio);
 
-  // Keyboard shortcut Cmd/Ctrl + Enter
+  // Physical Tab key and Cmd/Ctrl + Enter shortcuts
   const irInput = document.getElementById("ir-code-input");
   if (irInput) {
     irInput.addEventListener("keydown", (e) => {
+      if (e.key === "Tab") {
+        e.preventDefault();
+        if (irInput.value.trim() === "") {
+          insertBoilerplate();
+        } else {
+          // Standard 4 space indentation
+          const start = irInput.selectionStart;
+          const end = irInput.selectionEnd;
+          irInput.value = irInput.value.substring(0, start) + "    " + irInput.value.substring(end);
+          irInput.selectionStart = irInput.selectionEnd = start + 4;
+        }
+        return;
+      }
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
         handleOptimize();

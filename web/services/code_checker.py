@@ -24,7 +24,6 @@ def check_python_ast(code: str) -> Optional[Dict[str, Any]]:
         line_num = e.lineno or 1
         faulty_line = lines[line_num - 1] if 0 < line_num <= len(lines) else ""
 
-        # Infer common fixes
         suggested = faulty_line
         msg = e.msg or "Syntax error"
 
@@ -41,16 +40,84 @@ def check_python_ast(code: str) -> Optional[Dict[str, Any]]:
                 suggested = faulty_line + ")" * (faulty_line.count("(") - faulty_line.count(")"))
                 msg = "Unclosed parenthesis ')' on this line."
 
+        if suggested.strip() == faulty_line.strip():
+            suggested = faulty_line.rstrip() + ":"
+
         return {
             "line_number": line_num,
             "faulty_line": faulty_line,
             "message": f"SyntaxError: {msg}",
-            "suggested_line": suggested if suggested != faulty_line else (faulty_line + "  # Check syntax"),
+            "suggested_line": suggested,
         }
 
 
+async def check_code_with_ai(code: str, language: str) -> Optional[List[Dict[str, Any]]]:
+    """Use the AI optimization engine to detect subtle syntax and logical mistakes with high precision."""
+    prompt = f"""You are a master compiler linter and syntax diagnostic tool for {language}.
+Analyze the provided code for syntax errors, typos, malformed operator sequences (e.g. '///0', '* +'), missing tokens (colons, semicolons, brackets), or invalid statements.
+
+RULES:
+1. If the code contains syntax mistakes, typos, or malformed expressions, return:
+{{
+  "has_errors": true,
+  "errors": [
+    {{
+      "line_number": <1-indexed line number in the code below>,
+      "faulty_line": "<exact faulty line as written in the code>",
+      "message": "<clear, helpful explanation of the mistake and how to fix it>",
+      "suggested_line": "<exact corrected replacement line with proper syntax and matching indentation>"
+    }}
+  ]
+}}
+2. "suggested_line" MUST BE DIFFERENT from "faulty_line". It must properly fix the mistake and be syntactically valid {language} code.
+3. If the code is valid code with no syntax errors, return:
+{{
+  "has_errors": false,
+  "errors": []
+}}
+4. Respond in valid JSON only.
+
+Code:
+{code}
+"""
+    try:
+        solver = create_ai_solver()
+        if hasattr(solver, "client") and hasattr(solver, "deployment_name"):
+            res = await solver.client.chat.completions.create(
+                model=solver.deployment_name,
+                messages=[
+                    {
+                        "role": "system",
+                        "content": f"You are a professional compiler frontend syntax validator for {language}. Always respond in valid JSON only.",
+                    },
+                    {"role": "user", "content": prompt},
+                ],
+                max_completion_tokens=600,
+                response_format={"type": "json_object"} if hasattr(solver.client, "chat") else None,
+            )
+            raw = res.choices[0].message.content
+            match = re.search(r"\{[\s\S]*\}", raw)
+            if match:
+                data = json.loads(match.group(0))
+                if not data.get("has_errors"):
+                    return []
+                errors = data.get("errors", [])
+                valid_errors = []
+                for e in errors:
+                    faulty = e.get("faulty_line", "").strip()
+                    suggested = e.get("suggested_line", "").strip()
+                    # Guarantee that the suggested fix is not identical to the mistake!
+                    if faulty and suggested and faulty != suggested:
+                        valid_errors.append(e)
+                return valid_errors
+    except Exception as e:
+        logger.warning(f"AI code check error: {e}")
+
+    return None
+
+
 def check_heuristics(code: str, language: str = "generic") -> List[Dict[str, Any]]:
-    """Check for obvious syntax mistakes using pattern matching across languages."""
+    """Fallback pattern matching for syntax mistakes when AI is offline or unreachable."""
     errors = []
     lines = code.split("\n")
 
@@ -61,20 +128,31 @@ def check_heuristics(code: str, language: str = "generic") -> List[Dict[str, Any
         if not line or line.startswith(("#", "//", "/*")):
             continue
 
-        # 1. Double operators like * +, / *, + + (without variable)
-        if re.search(r"([\+\*\/])\s*([\+\*\/])", line) and "++" not in line and "**" not in line:
-            # e.g. x = 4 * + a
-            fixed = re.sub(r"\*\s*\+", "*", raw_line)
-            fixed = re.sub(r"\+\s*\+", "+", fixed)
+        # 1. Triple slash typo (e.g. ///0)
+        if "///" in line:
+            fixed = raw_line.replace("///", "/ ")
             errors.append({
                 "line_number": line_num,
                 "faulty_line": raw_line,
-                "message": "Consecutive arithmetic operators detected (e.g. '* +').",
-                "suggested_line": fixed if fixed != raw_line else raw_line.replace("* +", "*"),
+                "message": "Malformed operator sequence '///'. Replace with valid division operator '/'.",
+                "suggested_line": fixed,
             })
             continue
 
-        # 2. Missing semicolon in C / C++ / Java / Rust (excluding function headers / blocks)
+        # 2. Double operators like * +, + +, / *
+        if re.search(r"([\+\*\/])\s*([\+\*])", line) and "++" not in line and "**" not in line:
+            fixed = re.sub(r"\*\s*\+", "*", raw_line)
+            fixed = re.sub(r"\+\s*\+", "+", fixed)
+            if fixed.strip() != raw_line.strip():
+                errors.append({
+                    "line_number": line_num,
+                    "faulty_line": raw_line,
+                    "message": "Consecutive arithmetic operators detected (e.g. '* +').",
+                    "suggested_line": fixed,
+                })
+                continue
+
+        # 3. Missing semicolon in C / C++ / Java / Rust
         if language in ("cpp", "c", "java", "rust"):
             if not line.endswith((";", "{", "}", ":", ">", ",")) and not line.startswith(("#", "//", "/*")):
                 if not re.match(r"^\s*(if|for|while|else|struct|class|fn|public|private)\b", line):
@@ -86,18 +164,19 @@ def check_heuristics(code: str, language: str = "generic") -> List[Dict[str, Any
                     })
                     continue
 
-        # 3. Malformed assignment (e.g. t1 = = 5 or = 4)
+        # 4. Malformed assignment operator (e.g. '= =')
         if "= =" in line and not any(kw in line for kw in ("if", "while", "assert")):
             fixed = raw_line.replace("= =", "=")
-            errors.append({
-                "line_number": line_num,
-                "faulty_line": raw_line,
-                "message": "Malformed assignment operator '= ='. Did you mean a single '='?",
-                "suggested_line": fixed,
-            })
-            continue
+            if fixed.strip() != raw_line.strip():
+                errors.append({
+                    "line_number": line_num,
+                    "faulty_line": raw_line,
+                    "message": "Malformed assignment operator '= ='. Did you mean a single '='?",
+                    "suggested_line": fixed,
+                })
+                continue
 
-        # 4. For loop missing colon in Python
+        # 5. Missing colon in Python
         if language == "python" or "def " in code or "print(" in code:
             if re.match(r"^\s*(for|while|if|def)\b", raw_line) and not raw_line.rstrip().endswith(":"):
                 errors.append({
@@ -111,80 +190,35 @@ def check_heuristics(code: str, language: str = "generic") -> List[Dict[str, Any
     return errors
 
 
-async def check_code_with_ai(code: str, language: str) -> List[Dict[str, Any]]:
-    """Use the AI optimization engine to detect subtle syntax and logical mistakes."""
-    prompt = f"""Analyze this {language} code for any syntax errors, typos, or malformed lines.
-If there are no errors, return: {{"has_errors": false, "errors": []}}
-If there ARE errors, return valid JSON with this exact structure:
-{{
-  "has_errors": true,
-  "errors": [
-    {{
-      "line_number": <1-indexed integer>,
-      "faulty_line": "<exact faulty line text>",
-      "message": "<simple, friendly explanation of the mistake>",
-      "suggested_line": "<the exact corrected replacement line>"
-    }}
-  ]
-}}
-
-Code:
-{code}
-"""
-    try:
-        solver = create_ai_solver()
-        if hasattr(solver, "client") and hasattr(solver, "deployment_name"):
-            res = await solver.client.chat.completions.create(
-                model=solver.deployment_name,
-                messages=[
-                    {
-                        "role": "system",
-                        "content": "You are a precise code linter and syntax validator. Always output valid JSON only.",
-                    },
-                    {"role": "user", "content": prompt},
-                ],
-                max_completion_tokens=400,
-                response_format={"type": "json_object"} if hasattr(solver.client, "chat") else None,
-            )
-            raw = res.choices[0].message.content
-            # Parse JSON
-            match = re.search(r"\{[\s\S]*\}", raw)
-            if match:
-                data = json.loads(match.group(0))
-                if data.get("has_errors") and data.get("errors"):
-                    return data["errors"]
-    except Exception as e:
-        logger.warning(f"AI code check error: {e}")
-
-    return []
-
-
 async def analyze_code_for_errors(code: str, language: str = "python") -> Dict[str, Any]:
-    """Combine AST, heuristics, and AI to identify mistakes and provide 1-click fixes."""
+    """Combine AI diagnostic engine, AST, and heuristic fallback to provide smart 1-click fixes."""
     if not code or not code.strip():
         return {"has_errors": False, "errors": []}
 
-    errors = []
+    # 1. Primary: Run AI-first diagnostic analysis (Smart and context-aware)
+    ai_errors = await check_code_with_ai(code, language)
+    if ai_errors is not None:
+        return {
+            "has_errors": len(ai_errors) > 0,
+            "errors": ai_errors[:5],
+        }
 
-    # 1. Quick AST check for Python
+    # 2. Fallback: Python official AST parser
+    errors = []
     if language == "python" or "def " in code or "import " in code:
         ast_err = check_python_ast(code)
-        if ast_err:
+        if ast_err and ast_err["suggested_line"].strip() != ast_err["faulty_line"].strip():
             errors.append(ast_err)
 
-    # 2. Fast heuristic checks
+    # 3. Fallback: Fast heuristic pattern matcher
     heuristic_errs = check_heuristics(code, language)
     for h in heuristic_errs:
         if not any(e["line_number"] == h["line_number"] for e in errors):
-            errors.append(h)
-
-    # 3. AI analysis if no local errors caught or if heuristics are empty
-    if not errors and len(code.split("\n")) <= 60:
-        ai_errs = await check_code_with_ai(code, language)
-        if ai_errs:
-            errors.extend(ai_errs)
+            if h["suggested_line"].strip() != h["faulty_line"].strip():
+                errors.append(h)
 
     return {
         "has_errors": len(errors) > 0,
-        "errors": errors[:5],  # Top 5 errors to avoid UI clutter
+        "errors": errors[:5],
     }
+

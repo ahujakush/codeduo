@@ -41,21 +41,23 @@ def test_boilerplates_endpoint_has_6_famous_languages(client):
     response = client.get("/api/boilerplates")
     assert response.status_code == 200
     langs = response.json()
-    # Verify the 6 famous languages are present
+    # Verify famous languages are present
     assert "python" in langs
     assert "cpp" in langs
     assert "java" in langs
     assert "javascript" in langs
     assert "go" in langs
     assert "rust" in langs
-    assert len(langs) == 6
+    assert "html" in langs
+    assert len(langs) >= 6
 
-    # Verify each contains clean code and filename
+    # Verify each contains clean canonical starter code and filename
     for key, item in langs.items():
         assert "name" in item
         assert "code" in item
         assert "filename" in item
-        assert len(item["code"]) > 50
+        assert len(item["code"]) >= 30
+        assert "Hello, World!" in item["code"]
 
 
 def test_teacher_explanation_endpoint(client):
@@ -63,7 +65,7 @@ def test_teacher_explanation_endpoint(client):
         "/api/teacher-explanation",
         json={
             "code": "x = 4 * 2 + a\ny = 4 * 2 + a + b\nfor i in range(100): sum += (a + b)",
-            "solution": "Pass 1: Constant folding on 4*2. Pass 2: Loop invariant motion on a+b.",
+            "solution": "t1 = 4 * 2\n...",
         },
     )
     assert response.status_code == 200
@@ -73,7 +75,7 @@ def test_teacher_explanation_endpoint(client):
     script = data["teacher_script"]
     # Teacher script should be pedagogical and conversational
     assert len(script) > 30
-    assert "compiler" in script.lower() or "optimize" in script.lower() or "constant" in script.lower() or "loop" in script.lower()
+    assert "compiler" in script.lower() or "temporary" in script.lower() or "jump" in script.lower() or "tac" in script.lower() or "intermediate" in script.lower()
 
 
 def test_stats_endpoint(client):
@@ -100,7 +102,8 @@ def test_optimize_valid_python_boilerplate(client):
     assert response.status_code == 200
     data = response.json()
     assert data["success"] is True
-    assert "Optimized Intermediate Code" in data["solution"] or "IR Analysis" in data["solution"]
+    assert "solution" in data
+    assert len(data["solution"]) > 5
     assert "azure" not in data["optimizer"].lower()
 
 
@@ -143,3 +146,27 @@ def test_check_code_clean_code(client):
     data = response.json()
     assert data["has_errors"] is False
     assert len(data["errors"]) == 0
+
+
+def test_check_code_detects_user_javascript_mistake(client):
+    code_with_triple_slash = (
+        "function computeMetrics(a, b) {\n"
+        "    const x = a + 1;\n"
+        "    const deadValue = (a + b) ///0;\n"
+        "    return x;\n"
+        "}"
+    )
+    response = client.post(
+        "/api/check-code",
+        json={"code": code_with_triple_slash, "language": "javascript"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["has_errors"] is True
+    assert len(data["errors"]) > 0
+    first = data["errors"][0]
+    # Suggested line must properly fix the mistake and NOT be identical to the faulty line
+    assert first["faulty_line"].strip() != first["suggested_line"].strip()
+    assert "///0" not in first["suggested_line"]
+    assert "deadValue" in first["suggested_line"]
+
