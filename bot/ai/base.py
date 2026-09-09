@@ -92,6 +92,14 @@ class BaseAISolver(ABC):
 
     def get_system_prompt(self, persona: str) -> str:
         """Retrieve system prompt corresponding to optimization persona."""
-        return COMPILER_PERSONA_PROMPTS.get(
+        base_prompt = COMPILER_PERSONA_PROMPTS.get(
             persona.lower(), COMPILER_PERSONA_PROMPTS["all_passes"]
         )
+        strict_rules = (
+            "\n\nCRITICAL RULES FOR COMPLEX PROBLEMS:\n"
+            "- PRESERVE all user-defined variables.\n"
+            "- DO NOT assume undeclared variables are zero (0) or initialized to any default value.\n"
+            "- DO NOT remove or eliminate variables without an explicit, sound justification.\n"
+            "- Be exceptionally strict and smart when handling complex logic: do not discard undeclared variables."
+        )
+        return base_prompt + strict_rules

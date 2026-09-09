@@ -51,12 +51,11 @@ def test_persona_system_prompts():
     for persona in ["all_passes", "cse", "loop_opt", "dead_code", "peephole"]:
         prompt = solver.get_system_prompt(persona)
         assert len(prompt) > 20
-        assert prompt == COMPILER_PERSONA_PROMPTS[persona]
+        assert prompt.startswith(COMPILER_PERSONA_PROMPTS[persona])
 
 
 def test_factory_fallback_to_mock():
     cfg = BotConfig(
-        telegram_bot_token="test",
         ai_provider="mock",
         azure_api_key="",
         azure_endpoint="",

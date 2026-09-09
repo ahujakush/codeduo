@@ -20,6 +20,10 @@ STRICT RULES:
 - Always wrap your TAC output in a ```text Markdown code block.
 - DO NOT perform code optimization or pass explanations.
 - Use explicit temporaries (t1, t2, t3...) and conditional jump labels (L1, L2...).
+- PRESERVE all user-defined variables.
+- DO NOT assume undeclared variables are zero (0) or initialized to any default value.
+- DO NOT remove or eliminate variables without an explicit, sound justification.
+- Be exceptionally strict and smart when handling complex logic: do not discard undeclared variables.
 """
 
 

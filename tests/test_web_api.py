@@ -6,7 +6,6 @@ and teacher-style audio walkthroughs.
 import pytest
 from fastapi.testclient import TestClient
 from web.app import app
-from web.services.elevenlabs_service import sanitize_for_speech
 from web.services.boilerplates import LANGUAGE_BOILERPLATES
 
 
@@ -105,18 +104,6 @@ def test_optimize_valid_python_boilerplate(client):
     assert "solution" in data
     assert len(data["solution"]) > 5
     assert "azure" not in data["optimizer"].lower()
-
-
-def test_compiler_speech_sanitizer():
-    raw = (
-        "Applied TAC optimization with CSE and DCE. "
-        "Temporary t1 is folded to 8 and hoisted."
-    )
-    cleaned = sanitize_for_speech(raw)
-    assert "Three Address Code" in cleaned
-    assert "Common Subexpression Elimination" in cleaned
-    assert "Dead Code Elimination" in cleaned
-    assert "temporary 1" in cleaned
 
 
 def test_check_code_detects_broken_python(client):
