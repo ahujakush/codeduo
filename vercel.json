@@ -3,6 +3,10 @@
     {
       "src": "api/index.py",
       "use": "@vercel/python"
+    },
+    {
+      "src": "api/hello.py",
+      "use": "@vercel/python"
     }
   ],
   "rewrites": [
@@ -13,6 +17,10 @@
     {
       "source": "/",
       "destination": "/web/static/index.html"
+    },
+    {
+      "source": "/hello",
+      "destination": "/api/hello.py"
     },
     {
       "source": "/(.*)",
