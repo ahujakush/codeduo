@@ -1,0 +1,224 @@
+/* Duolingo "Feather" Design System Styles */
+
+:root {
+  --duo-green: #58CC02;
+  --duo-green-shadow: #46A302;
+  --duo-green-hover: #61E002;
+
+  --duo-blue: #1CB0F6;
+  --duo-blue-shadow: #1899D6;
+  --duo-blue-hover: #24BCFF;
+
+  --duo-yellow: #FFC800;
+  --duo-yellow-shadow: #E5A500;
+  --duo-yellow-hover: #FFD220;
+
+  --duo-orange: #FF9600;
+  --duo-orange-shadow: #E58700;
+
+  --duo-red: #FF4B4B;
+  --duo-red-shadow: #EA2B2B;
+
+  --duo-purple: #CE82FF;
+  --duo-purple-shadow: #A559DF;
+
+  --duo-gray-bg: #F7F7F7;
+  --duo-border: #E5E5E5;
+  --duo-border-dark: #CECECE;
+  --duo-text: #4B4B4B;
+  --duo-text-dark: #1F2937;
+}
+
+body {
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--duo-gray-bg);
+  color: var(--duo-text-dark);
+}
+
+/* 3D Tactile Buttons (Duolingo signature style) */
+.btn-3d {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: 1rem;
+  padding: 0.75rem 1.5rem;
+  transition: all 0.1s ease;
+  user-select: none;
+  cursor: pointer;
+}
+
+.btn-3d:active {
+  transform: translateY(3px);
+}
+
+/* Green Primary Button */
+.btn-green {
+  background-color: var(--duo-green);
+  color: #ffffff;
+  box-shadow: 0 4px 0 var(--duo-green-shadow);
+  border: none;
+}
+.btn-green:hover {
+  background-color: var(--duo-green-hover);
+}
+.btn-green:active {
+  box-shadow: 0 1px 0 var(--duo-green-shadow);
+}
+
+/* Blue Action Button */
+.btn-blue {
+  background-color: var(--duo-blue);
+  color: #ffffff;
+  box-shadow: 0 4px 0 var(--duo-blue-shadow);
+  border: none;
+}
+.btn-blue:hover {
+  background-color: var(--duo-blue-hover);
+}
+.btn-blue:active {
+  box-shadow: 0 1px 0 var(--duo-blue-shadow);
+}
+
+/* Yellow Accent Button */
+.btn-yellow {
+  background-color: var(--duo-yellow);
+  color: #ffffff;
+  box-shadow: 0 4px 0 var(--duo-yellow-shadow);
+  border: none;
+}
+.btn-yellow:active {
+  box-shadow: 0 1px 0 var(--duo-yellow-shadow);
+}
+
+/* White / Neutral Card Button */
+.btn-neutral {
+  background-color: #ffffff;
+  color: var(--duo-text);
+  border: 2px solid var(--duo-border);
+  box-shadow: 0 4px 0 var(--duo-border);
+}
+.btn-neutral:hover {
+  background-color: #f9fafb;
+}
+.btn-neutral:active {
+  box-shadow: 0 1px 0 var(--duo-border);
+}
+.btn-neutral.active {
+  background-color: #e0f2fe;
+  border-color: var(--duo-blue);
+  color: var(--duo-blue-shadow);
+  box-shadow: 0 4px 0 var(--duo-blue);
+}
+
+/* 3D Rounded Card */
+.card-duo {
+  background-color: #ffffff;
+  border-radius: 1.5rem;
+  border: 2px solid var(--duo-border);
+  box-shadow: 0 4px 0 var(--duo-border);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card-duo-interactive:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 var(--duo-border);
+}
+
+/* Speech Bubble */
+.speech-bubble {
+  position: relative;
+  background: #ffffff;
+  border-radius: 1.25rem;
+  border: 2px solid var(--duo-border);
+  box-shadow: 0 4px 0 var(--duo-border);
+  padding: 0.875rem 1.25rem;
+}
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 32px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: #ffffff transparent;
+  display: block;
+  width: 0;
+  z-index: 1;
+}
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -13px;
+  left: 30px;
+  border-width: 12px 12px 0;
+  border-style: solid;
+  border-color: var(--duo-border) transparent;
+  display: block;
+  width: 0;
+}
+
+/* Mascot Animations */
+@keyframes duo-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+@keyframes duo-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  75% { transform: rotate(4deg); }
+}
+
+@keyframes duo-speak {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.mascot-idle {
+  animation: duo-bob 3s ease-in-out infinite;
+}
+
+.mascot-thinking {
+  animation: duo-wiggle 1.2s ease-in-out infinite;
+}
+
+.mascot-speaking {
+  animation: duo-speak 0.6s ease-in-out infinite;
+}
+
+/* Audio wave animation */
+.sound-wave-bar {
+  width: 4px;
+  background-color: var(--duo-green);
+  border-radius: 9999px;
+  animation: wave 0.8s ease-in-out infinite;
+}
+.sound-wave-bar:nth-child(2) { animation-delay: 0.15s; }
+.sound-wave-bar:nth-child(3) { animation-delay: 0.3s; }
+.sound-wave-bar:nth-child(4) { animation-delay: 0.45s; }
+
+@keyframes wave {
+  0%, 100% { height: 6px; }
+  50% { height: 22px; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb {
+  background: #d4d4d4;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

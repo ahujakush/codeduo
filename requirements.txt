@@ -1,18 +1,20 @@
-# Telegram Bot Framework
-python-telegram-bot>=21.0,<23.0
+# Web Framework
+fastapi>=0.110.0
+uvicorn>=0.28.0
+python-multipart>=0.0.9
 
 # AI Provider SDKs
-google-genai>=1.0.0
 openai>=1.50.0
+google-genai>=1.0.0
 
-# Environment and configuration
+# HTTP & Voice Client
+httpx>=0.27.0
 python-dotenv>=1.0.0
 pydantic>=2.0.0
 
 # Utilities & Math Problem Solving
 sympy>=1.12
 pillow>=10.0.0
-httpx>=0.27.0
 
 # Testing
 pytest>=8.0.0

@@ -1,12 +1,11 @@
 """
-Configuration module for AI Problem Solver.
-Loads settings from environment variables and .env file.
+Web Application Configuration.
+Loads Azure, ElevenLabs, Gemini, and server parameters from environment.
 """
 
 import os
 import logging
 from dataclasses import dataclass, field
-from typing import Set
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,12 +14,17 @@ logger = logging.getLogger(__name__)
 
 
 @dataclass
-class BotConfig:
+class WebConfig:
+    # Server configuration
+    host: str = field(default_factory=lambda: os.getenv("WEB_HOST", "0.0.0.0").strip())
+    port: int = field(default_factory=lambda: int(os.getenv("WEB_PORT", "8000")))
+
+    # AI Provider Priority
     ai_provider: str = field(
         default_factory=lambda: os.getenv("AI_PROVIDER", "azure").strip().lower()
     )
 
-    # Azure OpenAI Configuration (Primary)
+    # Azure OpenAI Configuration (Primary Brain)
     azure_api_key: str = field(
         default_factory=lambda: os.getenv("AZURE_OPENAI_API_KEY", "").strip()
     )
@@ -32,6 +36,20 @@ class BotConfig:
     )
     azure_deployment: str = field(
         default_factory=lambda: os.getenv("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-5.4-mini").strip()
+    )
+    azure_model: str = field(
+        default_factory=lambda: os.getenv("AZURE_OPENAI_MODEL", "gpt-5.4-mini").strip()
+    )
+
+    # ElevenLabs Voice Narration Configuration
+    elevenlabs_api_key: str = field(
+        default_factory=lambda: os.getenv("ELEVENLABS_API_KEY", "").strip()
+    )
+    elevenlabs_voice_id: str = field(
+        default_factory=lambda: os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL").strip()
+    )
+    elevenlabs_model_id: str = field(
+        default_factory=lambda: os.getenv("ELEVENLABS_MODEL_ID", "eleven_turbo_v2_5").strip()
     )
 
     # Google Gemini Configuration
@@ -50,33 +68,15 @@ class BotConfig:
         default_factory=lambda: os.getenv("OPENAI_MODEL", "gpt-4o-mini").strip()
     )
 
-    # Groq Configuration
-    groq_api_key: str = field(
-        default_factory=lambda: os.getenv("GROQ_API_KEY", "").strip()
-    )
-    groq_model: str = field(
-        default_factory=lambda: os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
-    )
-
-    telegram_bot_token: str = field(
-        default_factory=lambda: os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    )
     default_persona: str = field(
         default_factory=lambda: os.getenv("DEFAULT_PERSONA", "solver").strip().lower()
     )
-    max_memory_turns: int = field(
-        default_factory=lambda: int(os.getenv("MAX_MEMORY_TURNS", "10"))
-    )
-    allowed_user_ids: Set[int] = field(default_factory=set)
 
-    def is_user_allowed(self, user_id: int) -> bool:
-        if not self.allowed_user_ids:
-            return True
-        return user_id in self.allowed_user_ids
+    def is_azure_configured(self) -> bool:
+        return bool(self.azure_api_key and self.azure_endpoint)
 
-    def is_telegram_configured(self) -> bool:
-        token = self.telegram_bot_token
-        return bool(token and token != "your_telegram_bot_token_here" and ":" in token)
+    def is_elevenlabs_configured(self) -> bool:
+        return bool(self.elevenlabs_api_key and self.elevenlabs_voice_id)
 
 
-config = BotConfig()
+web_config = WebConfig()

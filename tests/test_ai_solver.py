@@ -47,7 +47,7 @@ async def test_mock_solver_image():
     img_data = b"fake_image_bytes"
     solution = await solver.solve_image(img_data, mime_type="image/png", caption="Help me solve")
     assert "Image Received - Offline Mode" in solution
-    assert "fake_image_bytes" not in solution  # should report metadata
+    assert "fake_image_bytes" not in solution
     assert "image/png" in solution
 
 
@@ -60,10 +60,12 @@ def test_persona_system_prompts():
 
 
 def test_factory_fallback_to_mock():
-    # Empty config
+    # Empty config explicitly disabling all keys
     cfg = BotConfig(
         telegram_bot_token="test",
-        ai_provider="gemini",
+        ai_provider="mock",
+        azure_api_key="",
+        azure_endpoint="",
         gemini_api_key="",
         openai_api_key="",
         groq_api_key="",
