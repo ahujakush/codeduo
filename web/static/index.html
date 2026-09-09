@@ -328,33 +328,24 @@ if __name__ == "__main__":
           </div>
         </div>
 
-        <!-- Teacher Voice Narration Button -->
+        <!-- Teacher Explanation Button -->
         <div class="flex items-center space-x-2">
-          <button id="tts-btn" class="btn-3d btn-blue py-2 px-4 text-xs font-black flex items-center space-x-2" title="Listen to warm pedagogical walkthrough">
+          <button id="tts-btn" class="btn-3d btn-blue py-2 px-4 text-xs font-black flex items-center space-x-2" title="Read a warm pedagogical walkthrough">
             <span>🎓</span>
-            <span id="tts-btn-text">Explain Like a Teacher (Voice)</span>
-            
-            <!-- Sound Wave Animation -->
-            <div id="tts-wave" class="flex items-center space-x-1 h-5 ml-1 hidden">
-              <div class="sound-wave-bar"></div>
-              <div class="sound-wave-bar"></div>
-              <div class="sound-wave-bar"></div>
-              <div class="sound-wave-bar"></div>
-            </div>
+            <span id="tts-btn-text">Explain Like a Teacher</span>
           </button>
         </div>
       </div>
 
-      <!-- Teacher's Monologue Transcript Card -->
+      <!-- Teacher's Explanation Transcript Card -->
       <div id="teacher-transcript-card" class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/70 border-2 border-blue-200 hidden">
         <div class="flex items-start space-x-3">
           <span class="text-2xl">👩‍🏫</span>
           <div class="flex-1">
             <div class="flex items-center justify-between mb-1">
               <span class="text-xs font-black uppercase tracking-wider text-blue-900">
-                Professor's Spoken Walkthrough:
+                Professor's Walkthrough:
               </span>
-              <span class="text-[11px] font-bold text-blue-600">ElevenLabs Voice Audio</span>
             </div>
             <p id="teacher-transcript-text" class="text-sm font-semibold text-blue-950 leading-relaxed italic">
               <!-- Dynamically populated -->

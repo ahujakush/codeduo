@@ -41,17 +41,6 @@ class WebConfig:
         default_factory=lambda: os.getenv("AZURE_OPENAI_MODEL", "gpt-5.4-mini").strip()
     )
 
-    # ElevenLabs Voice Narration Configuration
-    elevenlabs_api_key: str = field(
-        default_factory=lambda: os.getenv("ELEVENLABS_API_KEY", "").strip()
-    )
-    elevenlabs_voice_id: str = field(
-        default_factory=lambda: os.getenv("ELEVENLABS_VOICE_ID", "EXAVITQu4vr4xnSDxMaL").strip()
-    )
-    elevenlabs_model_id: str = field(
-        default_factory=lambda: os.getenv("ELEVENLABS_MODEL_ID", "eleven_turbo_v2_5").strip()
-    )
-
     # Google Gemini Configuration
     gemini_api_key: str = field(
         default_factory=lambda: os.getenv("GEMINI_API_KEY", "").strip()
@@ -74,9 +63,5 @@ class WebConfig:
 
     def is_azure_configured(self) -> bool:
         return bool(self.azure_api_key and self.azure_endpoint)
-
-    def is_elevenlabs_configured(self) -> bool:
-        return bool(self.elevenlabs_api_key and self.elevenlabs_voice_id)
-
 
 web_config = WebConfig()

@@ -603,30 +603,20 @@ async function handlePhotoOptimize() {
   }
 }
 
-// --- Teacher-Style Voice Walkthrough Playback ---
-async function handlePlayAudio() {
+// --- Teacher-Style Walkthrough ---
+async function handleExplain() {
   if (!state.activeSolutionText) return;
 
   const ttsBtn = document.getElementById("tts-btn");
   const ttsText = document.getElementById("tts-btn-text");
-  const soundWave = document.getElementById("tts-wave");
   const transcriptCard = document.getElementById("teacher-transcript-card");
   const transcriptText = document.getElementById("teacher-transcript-text");
-
-  if (state.isPlayingAudio && state.currentAudio) {
-    state.currentAudio.pause();
-    state.isPlayingAudio = false;
-    ttsText.textContent = "Explain Like a Teacher (Voice)";
-    soundWave.classList.add("hidden");
-    return;
-  }
 
   duoAudio.playClick();
   ttsText.textContent = "Professor is Preparing Walkthrough...";
   ttsBtn.disabled = true;
 
   try {
-    // 1. Fetch teacher script
     const teacherScriptRes = await fetch("/api/teacher-explanation", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -636,70 +626,26 @@ async function handlePlayAudio() {
       }),
     });
 
-    let teacherScript = "";
     if (teacherScriptRes.ok) {
       const data = await teacherScriptRes.json();
-      teacherScript = data.teacher_script;
+      const teacherScript = data.teacher_script;
       state.teacherTranscript = teacherScript;
       
       if (transcriptCard && transcriptText) {
         transcriptText.textContent = `"${teacherScript}"`;
         transcriptCard.classList.remove("hidden");
       }
-    }
-
-    // 2. Stream audio
-    const res = await fetch("/api/tts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        text: teacherScript || state.activeSolutionText,
-        teacher_mode: true,
-      }),
-    });
-
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err.detail || "Voice narration failed");
-    }
-
-    const audioBlob = await res.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-
-    if (state.currentAudio) {
-      state.currentAudio.pause();
-    }
-
-    const audio = new Audio(audioUrl);
-    state.currentAudio = audio;
-    state.isPlayingAudio = true;
-
-    ttsText.textContent = "Pause Teacher Explanation";
-    soundWave.classList.remove("hidden");
-    ttsBtn.disabled = false;
-    setTeacherMessage("Speaking: Professor is walking you through the optimization passes!");
-
-    audio.onended = () => {
-      state.isPlayingAudio = false;
-      ttsText.textContent = "Explain Like a Teacher Again";
-      soundWave.classList.add("hidden");
       setTeacherMessage("Finished walkthrough! You can edit the code and optimize again!");
-    };
-
-    audio.onerror = () => {
-      state.isPlayingAudio = false;
-      ttsText.textContent = "Explain Like a Teacher (Voice)";
-      soundWave.classList.add("hidden");
-    };
-
-    await audio.play();
+    } else {
+      throw new Error("Failed to generate explanation");
+    }
 
   } catch (err) {
-    console.error("TTS Error:", err);
-    alert(`Teacher voice error: ${err.message}`);
-    ttsText.textContent = "Explain Like a Teacher (Voice)";
+    console.error("Explanation Error:", err);
+    alert(`Teacher explanation error: ${err.message}`);
+  } finally {
+    ttsText.textContent = "Explain Like a Teacher";
     ttsBtn.disabled = false;
-    soundWave.classList.add("hidden");
   }
 }
 
@@ -870,7 +816,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (photoOptBtn) photoOptBtn.addEventListener("click", handlePhotoOptimize);
 
   const ttsBtn = document.getElementById("tts-btn");
-  if (ttsBtn) ttsBtn.addEventListener("click", handlePlayAudio);
+  if (ttsBtn) ttsBtn.addEventListener("click", handleExplain);
 
   // Physical Tab key and Cmd/Ctrl + Enter shortcuts
   const irInput = document.getElementById("ir-code-input");

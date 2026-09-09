@@ -1,10 +1,12 @@
 version: '3.8'
 
 services:
-  telegram-ai-bot:
+  web-app:
     build: .
-    container_name: telegram_ai_solver_bot
+    container_name: web_ai_solver
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     env_file:
       - .env
     volumes:

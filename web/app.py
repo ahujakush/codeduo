@@ -18,7 +18,6 @@ from pydantic import BaseModel
 from web.config import web_config
 from bot.ai.factory import create_ai_solver
 from bot.memory.chat_memory import chat_memory
-from web.services.elevenlabs_service import elevenlabs_service
 from web.services.boilerplates import LANGUAGE_BOILERPLATES
 from web.services.teacher_explainer import generate_teacher_explanation
 from web.services.code_checker import analyze_code_for_errors
@@ -73,7 +72,6 @@ async def health_check():
         "platform": "CodingDuo",
         "optimizer": ai_solver.get_provider_name(),
         "model": ai_solver.get_model_name(),
-        "elevenlabs_configured": web_config.is_elevenlabs_configured(),
     }
 
 
@@ -183,33 +181,6 @@ async def get_teacher_explanation(req: TeacherScriptRequest):
 
     script = await generate_teacher_explanation(req.code, req.solution)
     return {"success": True, "teacher_script": script}
-
-
-@app.post("/api/tts")
-async def text_to_speech(req: TTSRequest):
-    """
-    Generate speech audio via ElevenLabs.
-    If teacher_mode is True and code/solution are provided,
-    speaks as a friendly professor explaining the concepts intuitively.
-    """
-    speech_text = req.text
-
-    if req.teacher_mode and req.code and req.solution:
-        speech_text = await generate_teacher_explanation(req.code, req.solution)
-
-    if not speech_text or not speech_text.strip():
-        raise HTTPException(status_code=400, detail="No text provided for speech.")
-
-    try:
-        audio_bytes = await elevenlabs_service.generate_speech_bytes(speech_text)
-        return Response(
-            content=audio_bytes,
-            media_type="audio/mpeg",
-            headers={"X-Spoken-Text": speech_text[:200].replace("\n", " ")},
-        )
-    except Exception as e:
-        logger.error(f"TTS error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"Voice narration failed: {e}")
 
 
 @app.post("/api/clear")

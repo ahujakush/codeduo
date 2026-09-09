@@ -58,25 +58,12 @@ class BotConfig:
         default_factory=lambda: os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile").strip()
     )
 
-    telegram_bot_token: str = field(
-        default_factory=lambda: os.getenv("TELEGRAM_BOT_TOKEN", "").strip()
-    )
     default_persona: str = field(
         default_factory=lambda: os.getenv("DEFAULT_PERSONA", "solver").strip().lower()
     )
     max_memory_turns: int = field(
         default_factory=lambda: int(os.getenv("MAX_MEMORY_TURNS", "10"))
     )
-    allowed_user_ids: Set[int] = field(default_factory=set)
-
-    def is_user_allowed(self, user_id: int) -> bool:
-        if not self.allowed_user_ids:
-            return True
-        return user_id in self.allowed_user_ids
-
-    def is_telegram_configured(self) -> bool:
-        token = self.telegram_bot_token
-        return bool(token and token != "your_telegram_bot_token_here" and ":" in token)
 
 
 config = BotConfig()

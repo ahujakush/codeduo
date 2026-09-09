@@ -1,6 +1,6 @@
 # 🦉 DuoSolve - AI Problem Solver (Duolingo Design Edition)
 
-> **An interactive, gamified AI Problem-Solving Web Application inspired by the [Duolingo Design System](https://blog.duolingo.com/hub/design/). Powered by Azure OpenAI Brain (`gpt-5.4-mini`), ElevenLabs Voice Narration (Bella), Google Gemini Vision, and local SymPy math.**
+> **An interactive, gamified AI Problem-Solving Web Application inspired by the [Duolingo Design System](https://blog.duolingo.com/hub/design/). Powered by Azure OpenAI Brain (`gpt-5.4-mini`), Google Gemini Vision, and local SymPy math.**
 
 ---
 
@@ -14,8 +14,6 @@
 - 🧠 **Azure OpenAI Brain**:
   - Primary reasoning engine powered by Azure OpenAI (`gpt-5.4-mini` / `gpt-4o-mini`) using credentials imported from your GTM plan.
   - Generates clear, step-by-step solutions with concepts, derivations, code blocks, and final answers.
-- 🔊 **ElevenLabs Voice Narration**:
-  - Click **"🔊 Listen with ElevenLabs"** on any solution to hear natural, high-fidelity speech (Bella voice, `eleven_turbo_v2_5`).
   - Integrated speech sanitizer translates mathematical equations (e.g. `\(3x + 15 = 45\)`) and code into natural spoken English.
   - Sound wave animations display in real time while audio is playing.
 - 📸 **Photo & Homework Solver**:
@@ -57,10 +55,6 @@ AZURE_OPENAI_ENDPOINT=https://mirofish-resource.openai.azure.com
 AZURE_OPENAI_API_VERSION=2024-12-01-preview
 AZURE_OPENAI_DEPLOYMENT_NAME=gpt-5.4-mini
 
-# ElevenLabs Voice Narration
-ELEVENLABS_API_KEY=sk_cc5fafc59759de1efa0e91a9c4e048a7ea1cea8d6d4354d0
-ELEVENLABS_VOICE_ID=EXAVITQu4vr4xnSDxMaL
-ELEVENLABS_MODEL_ID=eleven_turbo_v2_5
 
 # Fallback Vision & Models
 GEMINI_API_KEY=AIzaSyBScNxbKZ7UpxsFDF7uGvlkjiFx8j12M5s
@@ -92,7 +86,6 @@ emmad_project/
 │   ├── config.py              # Configuration & GTM environment variable loader
 │   ├── services/
 │   │   ├── azure_solver.py    # Azure OpenAI gpt-5.4-mini brain integration
-│   │   └── elevenlabs_service.py # ElevenLabs TTS & text-to-speech sanitizer
 │   └── static/
 │       ├── index.html         # Duolingo Feather UI frontend layout
 │       ├── css/style.css      # Duolingo 3D buttons, cards, animations & color palette
