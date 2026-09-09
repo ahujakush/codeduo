@@ -1,12 +1,13 @@
 /**
  * CodingDuo - Interactive Web Application Logic
- * Tactical 3D Design, Compiler Optimization Engine & Voice Narration
+ * 6 Famous Languages Boilerplate & Teacher-Style Voice Walkthrough
  */
 
 // --- Global State ---
 const state = {
   currentPass: "all_passes",
   currentTab: "editor", // "editor" or "photo"
+  currentLang: "python",
   soundEnabled: true,
   isGenerating: false,
   isPlayingAudio: false,
@@ -16,7 +17,9 @@ const state = {
   gems: 750,
   selectedFile: null,
   activeSolutionText: "",
-  presets: {},
+  activeInputCode: "",
+  teacherTranscript: "",
+  boilerplates: {},
 };
 
 // --- Web Audio Synthesizer (Tactile Sound Effects) ---
@@ -70,40 +73,12 @@ class CodingDuoAudio {
 
 const duoAudio = new CodingDuoAudio();
 
-// --- Mascot Expressions & Speech Bubble ---
-const MASCOT_PROMPTS = {
-  welcome: "Welcome to CodingDuo! Paste your Three-Address Code or SSA form and I'll optimize it pass-by-pass!",
-  thinking: "Running dataflow analysis, folding constants & hoisting invariants...",
-  success: "Optimization passes complete! Check out the instruction count reduction below!",
-  speaking: "Explaining the transformation passes in clear spoken English...",
-  photo: "Drop a Control Flow Graph diagram or whiteboard Three-Address Code and I'll inspect it!",
-  error: "Encountered an optimization issue. Check your IR syntax and try again!",
-};
-
-function setMascotMood(mood, customMessage = null) {
-  const mascotEl = document.getElementById("mascot-svg");
-  const speechEl = document.getElementById("mascot-speech");
-  const leftEye = document.getElementById("eye-left");
-  const rightEye = document.getElementById("eye-right");
-
-  if (!mascotEl || !speechEl) return;
-
-  mascotEl.className = "w-24 h-24 sm:w-28 sm:h-28 " + `mascot-${mood}`;
-  speechEl.textContent = customMessage || MASCOT_PROMPTS[mood] || MASCOT_PROMPTS.welcome;
-
-  if (mood === "thinking") {
-    leftEye.setAttribute("cy", "42");
-    rightEye.setAttribute("cy", "42");
-  } else if (mood === "speaking") {
-    leftEye.setAttribute("cy", "45");
-    rightEye.setAttribute("cy", "45");
-  } else {
-    leftEye.setAttribute("cy", "46");
-    rightEye.setAttribute("cy", "46");
-  }
+function setTeacherMessage(msg) {
+  const el = document.getElementById("teacher-status-message");
+  if (el) el.textContent = msg;
 }
 
-// --- Confetti Celebration on Optimization ---
+// --- Confetti Celebration ---
 function triggerConfetti() {
   const container = document.getElementById("confetti-container");
   if (!container) return;
@@ -137,7 +112,6 @@ function triggerConfetti() {
 
 // --- Render Formatted Solution ---
 function renderFormattedSolution(text) {
-  // Convert Markdown code blocks with syntax highlighting & copy button
   let formatted = text.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
     const validLang = lang ? lang.trim() : "text";
     const encoded = encodeURIComponent(code.trim());
@@ -152,19 +126,12 @@ function renderFormattedSolution(text) {
     `;
   });
 
-  // Convert Headers
   formatted = formatted.replace(/^### (.*$)/gim, '<h3 class="text-lg font-black text-gray-900 mt-5 mb-2 pb-1 border-b border-gray-200">$1</h3>');
   formatted = formatted.replace(/^## (.*$)/gim, '<h2 class="text-xl font-black text-gray-900 mt-6 mb-3 pb-1.5 border-b-2 border-gray-200">$1</h2>');
-
-  // Bold
   formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-extrabold text-gray-900">$1</strong>');
-  
-  // Lists
   formatted = formatted.replace(/^\s*•\s*(.+)$/gm, '<li class="ml-4 list-disc text-gray-700">$1</li>');
   formatted = formatted.replace(/^\s*-\s*(.+)$/gm, '<li class="ml-4 list-disc text-gray-700">$1</li>');
   formatted = formatted.replace(/^\s*\d+\.\s*(.+)$/gm, '<li class="ml-4 list-decimal font-medium text-gray-700">$1</li>');
-
-  // Paragraph breaks
   formatted = formatted.replace(/\n\n+/g, '<p class="my-3"></p>');
 
   return formatted;
@@ -186,7 +153,35 @@ function copyCode(btn, encodedCode) {
   }, 2000);
 }
 
-// --- Optimization Action Handler ---
+// --- Load Language Boilerplate Code ---
+function loadLanguageBoilerplate(langKey) {
+  if (!state.boilerplates[langKey]) return;
+  state.currentLang = langKey;
+  const template = state.boilerplates[langKey];
+
+  const codeInput = document.getElementById("ir-code-input");
+  const filenameEl = document.getElementById("active-filename");
+
+  if (codeInput) {
+    codeInput.value = template.code;
+  }
+  if (filenameEl) {
+    filenameEl.textContent = template.filename;
+  }
+
+  // Update button active states
+  document.querySelectorAll(".lang-boilerplate-btn").forEach((btn) => {
+    const isTarget = btn.getAttribute("data-lang") === langKey;
+    btn.classList.toggle("active", isTarget);
+    btn.classList.toggle("border-[#1CB0F6]", isTarget);
+  });
+
+  setTeacherMessage(
+    `Loaded ${template.name} boilerplate! Notice the constant multiplication and loop invariant? Click 'Apply Optimization Passes' to see the compiler optimize it!`
+  );
+}
+
+// --- Optimize Code Action Handler ---
 async function handleOptimize() {
   const inputEl = document.getElementById("ir-code-input");
   const code = inputEl ? inputEl.value.trim() : "";
@@ -196,10 +191,11 @@ async function handleOptimize() {
     return;
   }
 
+  state.activeInputCode = code;
   duoAudio.playClick();
   state.isGenerating = true;
   updateUIState();
-  setMascotMood("thinking");
+  setTeacherMessage("Running compiler optimization pipeline... Computing dataflow analysis & hoisting invariant code!");
 
   try {
     const res = await fetch("/api/optimize", {
@@ -217,7 +213,7 @@ async function handleOptimize() {
     displaySolution(data.solution, data.optimizer || "AI Optimization Engine");
     duoAudio.playSuccess();
     triggerConfetti();
-    setMascotMood("success");
+    setTeacherMessage("Success! Compiler optimization passes completed. Click 'Explain Like a Teacher' to hear the voice walkthrough!");
 
     state.xp += 25;
     state.gems += 5;
@@ -225,7 +221,7 @@ async function handleOptimize() {
 
   } catch (err) {
     console.error(err);
-    setMascotMood("error", `Error: ${err.message}`);
+    setTeacherMessage(`Optimization error: ${err.message}`);
     alert(`Optimization error: ${err.message}`);
   } finally {
     state.isGenerating = false;
@@ -236,14 +232,14 @@ async function handleOptimize() {
 // --- Photo / Flowgraph Upload & Optimize ---
 async function handlePhotoOptimize() {
   if (!state.selectedFile) {
-    alert("Please select or drop a Control Flow Graph or IR image first!");
+    alert("Please select or drop a Control Flow Graph or diagram first!");
     return;
   }
 
   duoAudio.playClick();
   state.isGenerating = true;
   updateUIState();
-  setMascotMood("thinking", "Scanning CFG diagram and basic blocks...");
+  setTeacherMessage("Scanning flowgraph image and extracting basic blocks...");
 
   const formData = new FormData();
   formData.append("file", state.selectedFile);
@@ -258,17 +254,18 @@ async function handlePhotoOptimize() {
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || "Image IR optimization failed");
 
+    state.activeInputCode = "Image Flowgraph Input";
     displaySolution(data.solution, data.optimizer || "AI Optimization Engine");
     duoAudio.playSuccess();
     triggerConfetti();
-    setMascotMood("success");
+    setTeacherMessage("Image Flowgraph optimization complete! Listen to the teacher explanation below.");
 
     state.xp += 30;
     updateStatsDisplay();
 
   } catch (err) {
     console.error(err);
-    setMascotMood("error", `Error: ${err.message}`);
+    setTeacherMessage(`Image optimizer error: ${err.message}`);
     alert(`Image optimizer error: ${err.message}`);
   } finally {
     state.isGenerating = false;
@@ -276,32 +273,60 @@ async function handlePhotoOptimize() {
   }
 }
 
-// --- Voice Narration Playback ---
+// --- Teacher-Style Voice Walkthrough Playback ---
 async function handlePlayAudio() {
   if (!state.activeSolutionText) return;
 
   const ttsBtn = document.getElementById("tts-btn");
   const ttsText = document.getElementById("tts-btn-text");
   const soundWave = document.getElementById("tts-wave");
+  const transcriptCard = document.getElementById("teacher-transcript-card");
+  const transcriptText = document.getElementById("teacher-transcript-text");
 
   if (state.isPlayingAudio && state.currentAudio) {
     state.currentAudio.pause();
     state.isPlayingAudio = false;
-    ttsText.textContent = "Explain Passes Aloud";
+    ttsText.textContent = "Explain Like a Teacher (Voice)";
     soundWave.classList.add("hidden");
-    setMascotMood("idle");
     return;
   }
 
   duoAudio.playClick();
-  ttsText.textContent = "Synthesizing Voice...";
+  ttsText.textContent = "Professor is Preparing Walkthrough...";
   ttsBtn.disabled = true;
 
   try {
+    // 1. Fetch the intuitive teacher monologue script first so user can read along
+    const teacherScriptRes = await fetch("/api/teacher-explanation", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        code: state.activeInputCode || "Intermediate Code",
+        solution: state.activeSolutionText,
+      }),
+    });
+
+    let teacherScript = "";
+    if (teacherScriptRes.ok) {
+      const data = await teacherScriptRes.json();
+      teacherScript = data.teacher_script;
+      state.teacherTranscript = teacherScript;
+      
+      // Display the teacher's transcript
+      if (transcriptCard && transcriptText) {
+        transcriptText.textContent = `"${teacherScript}"`;
+        transcriptCard.classList.remove("hidden");
+      }
+    }
+
+    // 2. Stream synthesized audio from ElevenLabs
     const res = await fetch("/api/tts", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ text: state.activeSolutionText }),
+      body: JSON.stringify({
+        text: teacherScript || state.activeSolutionText,
+        teacher_mode: true,
+      }),
     });
 
     if (!res.ok) {
@@ -320,34 +345,32 @@ async function handlePlayAudio() {
     state.currentAudio = audio;
     state.isPlayingAudio = true;
 
-    ttsText.textContent = "Pause Explanation";
+    ttsText.textContent = "Pause Teacher Explanation";
     soundWave.classList.remove("hidden");
     ttsBtn.disabled = false;
-    setMascotMood("speaking");
+    setTeacherMessage("Speaking: Professor is walking you through the optimization passes!");
 
     audio.onended = () => {
       state.isPlayingAudio = false;
-      ttsText.textContent = "Explain Passes Again";
+      ttsText.textContent = "Explain Like a Teacher Again";
       soundWave.classList.add("hidden");
-      setMascotMood("idle");
+      setTeacherMessage("Finished walkthrough! You can edit the code and optimize again!");
     };
 
     audio.onerror = () => {
       state.isPlayingAudio = false;
-      ttsText.textContent = "Explain Passes Aloud";
+      ttsText.textContent = "Explain Like a Teacher (Voice)";
       soundWave.classList.add("hidden");
-      setMascotMood("idle");
     };
 
     await audio.play();
 
   } catch (err) {
     console.error("TTS Error:", err);
-    alert(`Voice narration error: ${err.message}`);
-    ttsText.textContent = "Explain Passes Aloud";
+    alert(`Teacher voice error: ${err.message}`);
+    ttsText.textContent = "Explain Like a Teacher (Voice)";
     ttsBtn.disabled = false;
     soundWave.classList.add("hidden");
-    setMascotMood("idle");
   }
 }
 
@@ -393,21 +416,23 @@ function updateStatsDisplay() {
   document.getElementById("stat-streak").textContent = `${state.streak}`;
 }
 
-// --- Load Presets ---
-async function loadPresets() {
+// --- Fetch Boilerplates from API ---
+async function fetchBoilerplates() {
   try {
-    const res = await fetch("/api/presets");
+    const res = await fetch("/api/boilerplates");
     if (res.ok) {
-      state.presets = await res.json();
+      state.boilerplates = await res.json();
+      // Load default Python template
+      loadLanguageBoilerplate("python");
     }
   } catch (e) {
-    console.warn("Could not load presets:", e);
+    console.warn("Could not load boilerplates:", e);
   }
 }
 
 // --- Initialize Event Listeners ---
 document.addEventListener("DOMContentLoaded", async () => {
-  await loadPresets();
+  await fetchBoilerplates();
 
   // Tab Switching
   document.querySelectorAll("[data-tab]").forEach((btn) => {
@@ -425,7 +450,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("tab-editor-view").classList.toggle("hidden", tab !== "editor");
       document.getElementById("tab-photo-view").classList.toggle("hidden", tab !== "photo");
 
-      setMascotMood(tab === "photo" ? "photo" : "welcome");
+      setTeacherMessage(tab === "photo" ? "Upload a Control Flow Graph (CFG) diagram or whiteboard code!" : "Select a language boilerplate or edit code directly!");
     });
   });
 
@@ -439,17 +464,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Preset Chips Loader
-  document.querySelectorAll(".preset-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
+  // 6 Language Boilerplate Buttons
+  document.querySelectorAll(".lang-boilerplate-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
       duoAudio.playClick();
-      const key = chip.getAttribute("data-preset");
-      const inputEl = document.getElementById("ir-code-input");
-      if (inputEl && state.presets[key]) {
-        inputEl.value = state.presets[key].code;
-        inputEl.focus();
-        setMascotMood("welcome", `Loaded ${state.presets[key].title}! Click 'Apply Optimization Passes' to run.`);
-      }
+      const lang = btn.getAttribute("data-lang");
+      loadLanguageBoilerplate(lang);
     });
   });
 
@@ -508,7 +528,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Optimize Action Buttons
+  // Action Buttons
   const optBtn = document.getElementById("optimize-btn");
   if (optBtn) optBtn.addEventListener("click", handleOptimize);
 

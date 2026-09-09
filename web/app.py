@@ -1,6 +1,7 @@
 """
 CodingDuo - AI Intermediate Code Optimization Web Platform.
-Applies code optimization passes to Three-Address Code, SSA, and IR with tactile Duolingo aesthetic.
+Features 6 famous language boilerplate templates, compiler optimization passes,
+and teacher-style audio walkthroughs powered by ElevenLabs.
 """
 
 import os
@@ -17,13 +18,15 @@ from web.config import web_config
 from bot.ai.factory import create_ai_solver
 from bot.memory.chat_memory import chat_memory
 from web.services.elevenlabs_service import elevenlabs_service
+from web.services.boilerplates import LANGUAGE_BOILERPLATES
+from web.services.teacher_explainer import generate_teacher_explanation
 
 logger = logging.getLogger("codingduo")
 
 app = FastAPI(
     title="CodingDuo - AI Intermediate Code Optimizer",
     description="Interactive platform for applying compiler optimization techniques to Intermediate Code.",
-    version="2.1.0",
+    version="2.2.0",
 )
 
 app.add_middleware(
@@ -44,67 +47,15 @@ class OptimizeRequest(BaseModel):
 
 
 class TTSRequest(BaseModel):
-    text: str
+    text: Optional[str] = None
+    code: Optional[str] = None
+    solution: Optional[str] = None
+    teacher_mode: Optional[bool] = True
 
 
-# Preset Intermediate Code examples
-IR_PRESETS: Dict[str, Dict[str, str]] = {
-    "cse_const": {
-        "title": "Constant Folding & CSE",
-        "description": "Redundant calculations and constant expressions in Three-Address Code.",
-        "code": (
-            "# Expression: x = (2 * 4) + a; y = (2 * 4) + a + b\n"
-            "t1 = 2 * 4\n"
-            "t2 = t1 + a\n"
-            "x = t2\n"
-            "t3 = 2 * 4\n"
-            "t4 = t3 + a\n"
-            "t5 = t4 + b\n"
-            "y = t5"
-        ),
-    },
-    "loop_invariant": {
-        "title": "Loop Invariant Code Motion (LICM)",
-        "description": "Computations inside the loop that do not change across iterations.",
-        "code": (
-            "# while (i < 100) { a[i] = x + y; i++; }\n"
-            "L1:\n"
-            "  if i >= 100 goto L2\n"
-            "  t1 = x + y\n"
-            "  t2 = i * 4\n"
-            "  a[t2] = t1\n"
-            "  t3 = i + 1\n"
-            "  i = t3\n"
-            "  goto L1\n"
-            "L2:\n"
-            "  return"
-        ),
-    },
-    "dead_code": {
-        "title": "Dead Code & Variable Pruning",
-        "description": "Unused temporaries and dead assignments that never affect output.",
-        "code": (
-            "t1 = a * b\n"
-            "t2 = c + d\n"
-            "t3 = t1 + 10\n"
-            "dead_var = t2 * 5\n"
-            "unused_res = a + 1\n"
-            "return t3"
-        ),
-    },
-    "strength_reduction": {
-        "title": "Strength Reduction & Peephole",
-        "description": "Replacing expensive multiplications with additions or bitwise shifts.",
-        "code": (
-            "# Array index stepping in loop\n"
-            "t1 = i * 2\n"
-            "t2 = t1 + 0\n"
-            "t3 = x * 1\n"
-            "t4 = j * 8\n"
-            "ans = t2 + t3 + t4"
-        ),
-    },
-}
+class TeacherScriptRequest(BaseModel):
+    code: str
+    solution: str
 
 
 @app.get("/api/health")
@@ -118,9 +69,11 @@ async def health_check():
     }
 
 
+@app.get("/api/boilerplates")
 @app.get("/api/presets")
-async def get_presets():
-    return IR_PRESETS
+async def get_boilerplates():
+    """Return the 6 famous programming language boilerplate templates."""
+    return LANGUAGE_BOILERPLATES
 
 
 @app.get("/api/stats")
@@ -142,7 +95,7 @@ async def get_stats():
 @app.post("/api/solve")
 async def optimize_code(req: OptimizeRequest):
     if not req.code or not req.code.strip():
-        raise HTTPException(status_code=400, detail="Intermediate code cannot be empty.")
+        raise HTTPException(status_code=400, detail="Code cannot be empty.")
 
     session_id = req.session_id or str(uuid.uuid4())
     session_key = hash(session_id) % 100000000
@@ -207,14 +160,38 @@ async def optimize_image(
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/teacher-explanation")
+async def get_teacher_explanation(req: TeacherScriptRequest):
+    """Generate an intuitive, warm teacher-style explanation of the code optimizations."""
+    if not req.code or not req.solution:
+        raise HTTPException(status_code=400, detail="Both code and solution are required.")
+
+    script = await generate_teacher_explanation(req.code, req.solution)
+    return {"success": True, "teacher_script": script}
+
+
 @app.post("/api/tts")
 async def text_to_speech(req: TTSRequest):
-    if not req.text or not req.text.strip():
-        raise HTTPException(status_code=400, detail="Text cannot be empty.")
+    """
+    Generate speech audio via ElevenLabs.
+    If teacher_mode is True and code/solution are provided,
+    speaks as a friendly professor explaining the concepts intuitively.
+    """
+    speech_text = req.text
+
+    if req.teacher_mode and req.code and req.solution:
+        speech_text = await generate_teacher_explanation(req.code, req.solution)
+
+    if not speech_text or not speech_text.strip():
+        raise HTTPException(status_code=400, detail="No text provided for speech.")
 
     try:
-        audio_bytes = await elevenlabs_service.generate_speech_bytes(req.text)
-        return Response(content=audio_bytes, media_type="audio/mpeg")
+        audio_bytes = await elevenlabs_service.generate_speech_bytes(speech_text)
+        return Response(
+            content=audio_bytes,
+            media_type="audio/mpeg",
+            headers={"X-Spoken-Text": speech_text[:200].replace("\n", " ")},
+        )
     except Exception as e:
         logger.error(f"TTS error: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Voice narration failed: {e}")

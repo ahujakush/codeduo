@@ -1,11 +1,13 @@
 """
-Unit and integration tests for CodingDuo Web Application.
+Unit and integration tests for CodingDuo Web Application with 6 language boilerplates
+and teacher-style audio walkthroughs.
 """
 
 import pytest
 from fastapi.testclient import TestClient
 from web.app import app
 from web.services.elevenlabs_service import sanitize_for_speech
+from web.services.boilerplates import LANGUAGE_BOILERPLATES
 
 
 @pytest.fixture
@@ -20,6 +22,9 @@ def test_home_page_serves_codingduo(client):
     assert "intermediate code optimizer" in response.text.lower()
     assert "duolingo" not in response.text.lower()
     assert "azure" not in response.text.lower()
+    # Bird mascot removed
+    assert "mascot-svg" not in response.text
+    assert "mascot-beak" not in response.text
 
 
 def test_health_check_endpoint(client):
@@ -32,14 +37,43 @@ def test_health_check_endpoint(client):
     assert "azure" not in data["optimizer"].lower()
 
 
-def test_presets_endpoint(client):
-    response = client.get("/api/presets")
+def test_boilerplates_endpoint_has_6_famous_languages(client):
+    response = client.get("/api/boilerplates")
     assert response.status_code == 200
-    presets = response.json()
-    assert "cse_const" in presets
-    assert "loop_invariant" in presets
-    assert "dead_code" in presets
-    assert "strength_reduction" in presets
+    langs = response.json()
+    # Verify the 6 famous languages are present
+    assert "python" in langs
+    assert "cpp" in langs
+    assert "java" in langs
+    assert "javascript" in langs
+    assert "go" in langs
+    assert "rust" in langs
+    assert len(langs) == 6
+
+    # Verify each contains clean code and filename
+    for key, item in langs.items():
+        assert "name" in item
+        assert "code" in item
+        assert "filename" in item
+        assert len(item["code"]) > 50
+
+
+def test_teacher_explanation_endpoint(client):
+    response = client.post(
+        "/api/teacher-explanation",
+        json={
+            "code": "x = 4 * 2 + a\ny = 4 * 2 + a + b\nfor i in range(100): sum += (a + b)",
+            "solution": "Pass 1: Constant folding on 4*2. Pass 2: Loop invariant motion on a+b.",
+        },
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert data["success"] is True
+    assert "teacher_script" in data
+    script = data["teacher_script"]
+    # Teacher script should be pedagogical and conversational
+    assert len(script) > 30
+    assert "compiler" in script.lower() or "optimize" in script.lower() or "constant" in script.lower() or "loop" in script.lower()
 
 
 def test_stats_endpoint(client):
@@ -57,17 +91,11 @@ def test_optimize_empty_code_returns_400(client):
     assert "cannot be empty" in response.json()["detail"]
 
 
-def test_optimize_valid_tac_code(client):
-    tac_input = (
-        "t1 = 4 * 2\n"
-        "t2 = a + t1\n"
-        "t3 = 4 * 2\n"
-        "t4 = b + t3\n"
-        "ans = t2 + t4"
-    )
+def test_optimize_valid_python_boilerplate(client):
+    code = LANGUAGE_BOILERPLATES["python"]["code"]
     response = client.post(
         "/api/optimize",
-        json={"code": tac_input, "pass_type": "all_passes"},
+        json={"code": code, "pass_type": "all_passes"},
     )
     assert response.status_code == 200
     data = response.json()

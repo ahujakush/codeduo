@@ -30,10 +30,10 @@
   <header class="sticky top-0 z-40 bg-white border-b-2 border-[#E5E5E5] px-4 lg:px-8 py-3 shadow-sm">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       
-      <!-- Brand Logo & Mascot Icon -->
+      <!-- Brand Logo (Clean Code Bracket Terminal Icon, No Bird) -->
       <div class="flex items-center space-x-3 cursor-pointer select-none">
-        <div class="w-10 h-10 rounded-2xl bg-[#58CC02] flex items-center justify-center shadow-[0_3px_0_#46A302]">
-          <span class="text-2xl">🦉</span>
+        <div class="w-10 h-10 rounded-2xl bg-[#58CC02] flex items-center justify-center shadow-[0_3px_0_#46A302] text-white font-black text-xl font-mono">
+          &lt;/&gt;
         </div>
         <div>
           <h1 class="text-2xl font-black tracking-tight text-[#58CC02] leading-none">codingduo</h1>
@@ -41,7 +41,7 @@
         </div>
       </div>
 
-      <!-- Gamification Stats (Streak, Gems, Instructions Saved, Efficiency) -->
+      <!-- Gamification Stats (Streak, Gems, XP, Efficiency) -->
       <div class="hidden md:flex items-center space-x-6 select-none font-extrabold text-sm">
         
         <!-- Optimization Streak -->
@@ -77,7 +77,7 @@
           🔊 Sound ON
         </button>
 
-        <!-- Neutral AI Optimization Engine Badge (No Vendor Branding) -->
+        <!-- Neutral AI Optimization Engine Badge -->
         <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-green-50 border-2 border-[#58CC02] text-[#46A302] text-xs font-black uppercase tracking-wider shadow-[0_2px_0_#46A302]">
           <span class="w-2.5 h-2.5 rounded-full bg-[#58CC02] animate-pulse"></span>
           <span>AI Optimization Engine</span>
@@ -89,48 +89,81 @@
   <!-- Main Container -->
   <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
     
-    <!-- Hero / Mascot Coaching Row -->
-    <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
-      
-      <!-- Interactive SVG Mascot (Bytey the Compiler Owl) -->
-      <div class="flex-shrink-0 select-none">
-        <svg id="mascot-svg" class="w-24 h-24 sm:w-28 sm:h-28 mascot-idle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Body -->
-          <rect x="15" y="18" width="70" height="72" rx="35" fill="#58CC02"/>
-          <path d="M15 50C15 68 28 85 50 85C72 85 85 68 85 50" fill="#46A302"/>
-          <!-- Belly with Binary Hint -->
-          <ellipse cx="50" cy="62" rx="22" ry="20" fill="#8CE834"/>
-          <!-- Compiler Owl Eyes -->
-          <circle cx="36" cy="46" r="14" fill="white"/>
-          <circle cx="64" cy="46" r="14" fill="white"/>
-          <!-- Coding Glasses Frame -->
-          <rect x="20" y="34" width="30" height="24" rx="8" stroke="#1F2937" stroke-width="3.5" fill="none"/>
-          <rect x="50" y="34" width="30" height="24" rx="8" stroke="#1F2937" stroke-width="3.5" fill="none"/>
-          <line x1="50" y1="44" x2="50" y2="44" stroke="#1F2937" stroke-width="3.5"/>
-          <!-- Eye Pupils (Animated dynamically) -->
-          <circle id="eye-left" cx="36" cy="46" r="6" fill="#1F2937"/>
-          <circle id="eye-right" cx="64" cy="46" r="6" fill="#1F2937"/>
-          <circle cx="38" cy="43" r="2" fill="white"/>
-          <circle cx="66" cy="43" r="2" fill="white"/>
-          <!-- Orange Beak -->
-          <polygon id="mascot-beak" points="44,55 56,55 50,64" fill="#FF9600"/>
-          <!-- Feet -->
-          <rect x="30" y="88" width="12" height="6" rx="3" fill="#FF9600"/>
-          <rect x="58" y="88" width="12" height="6" rx="3" fill="#FF9600"/>
-        </svg>
-      </div>
-
-      <!-- Speech Bubble -->
-      <div class="flex-1 w-full">
-        <div class="speech-bubble">
-          <p id="mascot-speech" class="text-base sm:text-lg font-black text-gray-800 leading-snug">
-            Welcome to CodingDuo! Paste your Intermediate Code (Three-Address Code, SSA, or Quadruples) and I'll optimize it pass-by-pass!
-          </p>
+    <!-- Hero / Professor's Coaching Desk Banner (No Bird) -->
+    <div class="card-duo p-6 sm:p-7 bg-white mb-8 border-2 border-[#E5E5E5] shadow-[0_4px_0_#E5E5E5]">
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        
+        <div class="flex items-center space-x-4">
+          <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-green-500 to-emerald-400 flex items-center justify-center text-3xl shadow-[0_3px_0_#46A302] flex-shrink-0">
+            🎓
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xs font-black uppercase tracking-wider px-2.5 py-0.5 rounded-md bg-green-100 text-green-800">
+                Compiler Classroom
+              </span>
+              <span class="text-xs font-bold text-gray-400">• Interactive Learning</span>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-black text-gray-900 mt-0.5">
+              Professor's Code Optimization Lab
+            </h2>
+            <p id="teacher-status-message" class="text-sm font-bold text-gray-500 mt-1">
+              Select one of the 6 famous languages below to load its starter boilerplate code, or paste your own. I'll explain the compiler optimization passes for you!
+            </p>
+          </div>
         </div>
+
+        <div class="flex-shrink-0 self-end sm:self-center">
+          <span class="inline-flex items-center px-3.5 py-1.5 rounded-xl bg-blue-50 text-[#1899D6] border-2 border-blue-200 text-xs font-black uppercase tracking-wider">
+            6 Languages Ready
+          </span>
+        </div>
+
       </div>
     </div>
 
-    <!-- Pass Selector Pills (Tactile 3D Buttons) -->
+    <!-- 6 Famous Language Boilerplates Selector (Replacing the old presets toolbar) -->
+    <div class="card-duo p-5 bg-white mb-6 border-2 border-[#E5E5E5]">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+        <div class="flex items-center space-x-2">
+          <span class="text-lg">📁</span>
+          <span class="font-black text-xs sm:text-sm uppercase tracking-wider text-gray-700">
+            SELECT LANGUAGE BOILERPLATE (STARTER CODE):
+          </span>
+        </div>
+        <span class="text-xs font-bold text-gray-400">Click any language to load its complete starter code</span>
+      </div>
+
+      <!-- 6 Famous Languages Grid Buttons -->
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 select-none">
+        <button class="lang-boilerplate-btn btn-3d btn-neutral active py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="python">
+          <span class="text-base">🐍</span>
+          <span>Python</span>
+        </button>
+        <button class="lang-boilerplate-btn btn-3d btn-neutral py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="cpp">
+          <span class="text-base">⚡</span>
+          <span>C / C++</span>
+        </button>
+        <button class="lang-boilerplate-btn btn-3d btn-neutral py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="java">
+          <span class="text-base">☕</span>
+          <span>Java</span>
+        </button>
+        <button class="lang-boilerplate-btn btn-3d btn-neutral py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="javascript">
+          <span class="text-base">🟨</span>
+          <span>JavaScript</span>
+        </button>
+        <button class="lang-boilerplate-btn btn-3d btn-neutral py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="go">
+          <span class="text-base">🐹</span>
+          <span>Go</span>
+        </button>
+        <button class="lang-boilerplate-btn btn-3d btn-neutral py-2.5 px-3 text-xs font-black flex items-center justify-center space-x-1.5 transition" data-lang="rust">
+          <span class="text-base">🦀</span>
+          <span>Rust</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Pass Strategy Selector Pills (Tactile 3D Buttons) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 select-none">
       <button data-pass="all_passes" class="btn-3d btn-neutral active py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
         <span>🚀</span>
@@ -150,44 +183,36 @@
       </button>
     </div>
 
-    <!-- Tab Buttons: Text Editor vs Control Flow Graph Upload -->
+    <!-- Tab Buttons: Code Editor vs Control Flow Graph Upload -->
     <div class="flex border-b-2 border-gray-200 mb-6 space-x-4">
       <button data-tab="editor" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-[#58CC02] text-[#58CC02] flex items-center space-x-2">
-        <span>💻 IR Editor (TAC / SSA / Quadruples)</span>
+        <span>💻 Code & IR Editor</span>
       </button>
       <button data-tab="photo" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-transparent text-gray-400 hover:text-gray-600 flex items-center space-x-2">
         <span>📸 Scan Flowgraph / Whiteboard</span>
       </button>
     </div>
 
-    <!-- Tab 1: Intermediate Code Editor View -->
+    <!-- Tab 1: Code Editor View -->
     <div id="tab-editor-view" class="card-duo p-6 sm:p-8 mb-8 bg-white">
       
-      <!-- Presets Toolbar -->
-      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-        <span class="font-black text-xs uppercase tracking-wider text-gray-400">Load Classical Compiler Optimization Presets:</span>
-        <div class="flex flex-wrap gap-2">
-          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-blue-50 text-[#1899D6] border border-blue-200 hover:bg-blue-100 transition" data-preset="cse_const">
-            🧮 Folding + CSE
-          </button>
-          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" data-preset="loop_invariant">
-            🔄 Loop Invariant Motion
-          </button>
-          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition" data-preset="dead_code">
-            🧹 Dead Temporaries
-          </button>
-          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition" data-preset="strength_reduction">
-            ⚡ Strength Reduction
-          </button>
+      <!-- Active File Header -->
+      <div class="flex items-center justify-between pb-3 mb-3 border-b border-gray-100">
+        <div class="flex items-center space-x-2 text-xs font-bold text-gray-500 font-mono">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-400"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-yellow-400"></span>
+          <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+          <span id="active-filename" class="ml-2 text-gray-700 font-bold">optimizer_demo.py</span>
         </div>
+        <span class="text-xs font-extrabold uppercase tracking-wider text-gray-400">Editable Source / IR</span>
       </div>
 
       <!-- Code Textarea -->
       <div class="relative">
         <textarea
           id="ir-code-input"
-          rows="8"
-          placeholder="# Enter Three-Address Code, Quadruples, or SSA form&#10;t1 = 4 * 2&#10;t2 = a + t1&#10;t3 = 4 * 2&#10;t4 = b + t3&#10;ans = t2 + t4"
+          rows="11"
+          placeholder="# Select a boilerplate above or paste your code here..."
           class="w-full p-4 rounded-2xl border-2 border-gray-200 focus:border-[#1CB0F6] focus:border-b-4 outline-none font-mono text-sm leading-relaxed text-gray-800 placeholder-gray-400 transition resize-y bg-gray-50/50"
         ></textarea>
       </div>
@@ -197,7 +222,7 @@
         <div class="text-xs font-bold text-gray-400 flex items-center space-x-1">
           <span>⚡</span>
           <span>Earn <strong>+25 XP</strong> on successful optimization</span>
-          <span class="hidden sm:inline"> • Press <strong>Cmd+Enter</strong> to run</span>
+          <span class="hidden sm:inline"> • Press <strong>Cmd+Enter</strong> to optimize</span>
         </div>
 
         <button id="optimize-btn" class="btn-3d btn-green w-full sm:w-auto px-8 py-3.5 text-base flex items-center justify-center space-x-2">
@@ -209,9 +234,9 @@
 
     <!-- Tab 2: Scan Flowgraph / Whiteboard View -->
     <div id="tab-photo-view" class="card-duo p-6 sm:p-8 mb-8 bg-white hidden">
-      <h3 class="font-black text-lg text-gray-800 mb-2">📸 Scan Control Flow Graph (CFG) or Whiteboard IR</h3>
+      <h3 class="font-black text-lg text-gray-800 mb-2">📸 Scan Control Flow Graph (CFG) or Whiteboard Code</h3>
       <p class="text-sm font-bold text-gray-500 mb-6">
-        Upload a photo or diagram of a Control Flow Graph, basic blocks, or handwritten Three-Address Code to extract and optimize it.
+        Upload a photo or diagram of a Control Flow Graph, basic blocks, or handwritten code to extract and optimize it.
       </p>
 
       <!-- Drag & Drop Zone -->
@@ -248,7 +273,7 @@
     <div id="loading-spinner" class="card-duo p-8 text-center bg-white mb-8 hidden flex-col items-center justify-center space-y-4">
       <div class="w-12 h-12 border-4 border-[#58CC02] border-t-transparent rounded-full animate-spin"></div>
       <p class="font-black text-gray-700 text-base">Running compiler optimization pipeline...</p>
-      <p class="text-xs font-bold text-gray-400">Computing dataflow lattices, available expressions, and invariant hoisting</p>
+      <p class="text-xs font-bold text-gray-400">Performing constant folding, available expressions analysis, and invariant hoisting</p>
     </div>
 
     <!-- Optimization Results Display Card -->
@@ -265,11 +290,11 @@
           </div>
         </div>
 
-        <!-- Voice Narration Button -->
+        <!-- Teacher Voice Narration Button -->
         <div class="flex items-center space-x-2">
-          <button id="tts-btn" class="btn-3d btn-blue py-2 px-4 text-xs font-black flex items-center space-x-2">
-            <span>🔊</span>
-            <span id="tts-btn-text">Explain Optimization Passes</span>
+          <button id="tts-btn" class="btn-3d btn-blue py-2 px-4 text-xs font-black flex items-center space-x-2" title="Listen to warm pedagogical walkthrough">
+            <span>🎓</span>
+            <span id="tts-btn-text">Explain Like a Teacher (Voice)</span>
             
             <!-- Sound Wave Animation -->
             <div id="tts-wave" class="flex items-center space-x-1 h-5 ml-1 hidden">
@@ -279,6 +304,24 @@
               <div class="sound-wave-bar"></div>
             </div>
           </button>
+        </div>
+      </div>
+
+      <!-- Teacher's Monologue Transcript Card (Expandable / Readable) -->
+      <div id="teacher-transcript-card" class="mt-5 p-4 rounded-2xl bg-gradient-to-r from-blue-50/70 to-indigo-50/70 border-2 border-blue-200 hidden">
+        <div class="flex items-start space-x-3">
+          <span class="text-2xl">👩‍🏫</span>
+          <div class="flex-1">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-xs font-black uppercase tracking-wider text-blue-900">
+                Professor's Spoken Walkthrough:
+              </span>
+              <span class="text-[11px] font-bold text-blue-600">ElevenLabs Voice Audio</span>
+            </div>
+            <p id="teacher-transcript-text" class="text-sm font-semibold text-blue-950 leading-relaxed italic">
+              <!-- Dynamically populated -->
+            </p>
+          </div>
         </div>
       </div>
 
@@ -293,7 +336,7 @@
           <span class="text-3xl">🏆</span>
           <div>
             <h4 class="font-black text-sm text-green-900">Optimization Milestone Achieved!</h4>
-            <p class="text-xs font-bold text-green-700">You earned +25 XP and reduced target register pressure.</p>
+            <p class="text-xs font-bold text-green-700">You earned +25 XP and reduced target instruction count.</p>
           </div>
         </div>
         <div class="font-black text-green-600 text-sm">
@@ -308,11 +351,11 @@
   <footer class="bg-white border-t-2 border-[#E5E5E5] py-6 px-4 text-center text-xs font-extrabold text-gray-400">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center space-x-2">
-        <span class="text-base">🦉</span>
+        <span class="font-mono text-base font-black text-green-600">&lt;/&gt;</span>
         <span>CodingDuo • AI Intermediate Code Optimizer</span>
       </div>
       <div>
-        <span>Constant Folding • Common Subexpression Elimination • Loop Invariant Motion • Dead Code Elimination</span>
+        <span>Constant Folding • Common Subexpression Elimination • Loop Invariants • Strength Reduction</span>
       </div>
     </div>
   </footer>
