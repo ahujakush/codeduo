@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  telegram-ai-bot:
+    build: .
+    container_name: telegram_ai_solver_bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - ./.env:/app/.env
