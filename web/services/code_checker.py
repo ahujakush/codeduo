@@ -195,6 +195,19 @@ async def analyze_code_for_errors(code: str, language: str = "python") -> Dict[s
     if not code or not code.strip():
         return {"has_errors": False, "errors": []}
 
+    # 0. Auto-detect language overrides if default is passed but code is obviously a different language
+    if language == "python" or language == "generic":
+        if re.search(r'#include\s*<.*>', code) or "using namespace" in code or "cout <<" in code:
+            language = "cpp"
+        elif "public class" in code or "System.out.println" in code:
+            language = "java"
+        elif "fn main(" in code or "println!(" in code:
+            language = "rust"
+        elif "func main(" in code or "fmt.Println" in code:
+            language = "go"
+        elif "function " in code or "console.log" in code or "const " in code:
+            language = "javascript"
+
     # 1. Primary: Run AI-first diagnostic analysis (Smart and context-aware)
     ai_errors = await check_code_with_ai(code, language)
     if ai_errors is not None:
