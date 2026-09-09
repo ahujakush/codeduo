@@ -57,7 +57,7 @@ async def check_code_with_ai(code: str, language: str) -> Optional[List[Dict[str
 Analyze the provided code for syntax errors, typos, malformed operator sequences (e.g. '///0', '* +'), missing tokens (colons, semicolons, brackets), or invalid statements.
 
 RULES:
-1. If the code contains syntax mistakes, typos, or malformed expressions, return:
+1. If the code contains syntax mistakes, typos, or malformed expressions, you MUST find ALL of them and return them as a list:
 {{
   "has_errors": true,
   "errors": [
@@ -200,7 +200,7 @@ async def analyze_code_for_errors(code: str, language: str = "python") -> Dict[s
     if ai_errors is not None:
         return {
             "has_errors": len(ai_errors) > 0,
-            "errors": ai_errors[:5],
+            "errors": ai_errors,
         }
 
     # 2. Fallback: Python official AST parser
@@ -219,6 +219,6 @@ async def analyze_code_for_errors(code: str, language: str = "python") -> Dict[s
 
     return {
         "has_errors": len(errors) > 0,
-        "errors": errors[:5],
+        "errors": errors,
     }
 

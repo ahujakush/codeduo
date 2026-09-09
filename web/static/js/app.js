@@ -399,18 +399,34 @@ window.applyLineFixByIndex = function(idx) {
     }
   }
 
-  // 2. Search entire code for exact or normalized match
+  // 2. Search for the closest exact or normalized match
   if (targetIndex === -1 && faultyLine) {
-    targetIndex = lines.findIndex((l) => norm(l) === norm(faultyLine));
+    let closestDist = Infinity;
+    for (let i = 0; i < lines.length; i++) {
+      if (norm(lines[i]) === norm(faultyLine)) {
+        const dist = Math.abs(i - (lineNumber - 1));
+        if (dist < closestDist) {
+          closestDist = dist;
+          targetIndex = i;
+        }
+      }
+    }
   }
 
-  // 3. Search for line containing key substring of faultyLine
+  // 3. Search for the closest line containing key substring of faultyLine
   if (targetIndex === -1 && faultyLine) {
     const normFaulty = norm(faultyLine);
-    targetIndex = lines.findIndex((l) => {
-      const nl = norm(l);
-      return nl.length > 3 && (nl.includes(normFaulty) || normFaulty.includes(nl));
-    });
+    let closestDist = Infinity;
+    for (let i = 0; i < lines.length; i++) {
+      const nl = norm(lines[i]);
+      if (nl.length > 3 && (nl.includes(normFaulty) || normFaulty.includes(nl))) {
+        const dist = Math.abs(i - (lineNumber - 1));
+        if (dist < closestDist) {
+          closestDist = dist;
+          targetIndex = i;
+        }
+      }
+    }
   }
 
   // 4. Fallback to lineNumber - 1 if within bounds
