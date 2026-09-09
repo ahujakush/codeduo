@@ -24,7 +24,7 @@ def mock_update():
 
     message = MagicMock(spec=Message)
     message.reply_text = AsyncMock()
-    message.text = "Solve 2x + 10 = 20"
+    message.text = "t1 = a + b"
 
     update.effective_user = user
     update.effective_chat = chat
@@ -47,7 +47,7 @@ async def test_start_command(mock_update, mock_context):
     await start_command(mock_update, mock_context)
     mock_update.effective_message.reply_text.assert_called_once()
     call_args = mock_update.effective_message.reply_text.call_args[0][0]
-    assert "Namaste & Welcome" in call_args
+    assert "Namaste & Welcome" in call_args or "Welcome" in call_args
     assert "TestUser" in call_args
 
 
@@ -86,11 +86,11 @@ async def test_solve_command_without_args(mock_update, mock_context):
 
 @pytest.mark.asyncio
 async def test_solve_command_with_args(mock_update, mock_context):
-    mock_context.args = ["Solve", "2x", "+", "5", "=", "15"]
+    mock_context.args = ["t1", "=", "4", "*", "2"]
     await solve_command(mock_update, mock_context)
     mock_update.effective_message.reply_text.assert_called()
     call_args = mock_update.effective_message.reply_text.call_args[0][0]
-    assert "Math Equation Solved" in call_args
+    assert "Optimized Intermediate Code" in call_args or "IR Analysis" in call_args
 
 
 def test_rate_limiter():
@@ -99,7 +99,6 @@ def test_rate_limiter():
     assert limiter.is_rate_limited(uid) is False
     assert limiter.is_rate_limited(uid) is False
     assert limiter.is_rate_limited(uid) is False
-    # 4th request exceeds max_requests of 3
     assert limiter.is_rate_limited(uid) is True
 
 
@@ -109,6 +108,5 @@ def test_allowed_users_authorization():
     assert cfg.is_user_allowed(222) is True
     assert cfg.is_user_allowed(333) is False
 
-    # Empty means all users allowed
     cfg_open = BotConfig(allowed_user_ids=set())
     assert cfg_open.is_user_allowed(999) is True

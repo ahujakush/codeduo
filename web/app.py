@@ -1,11 +1,12 @@
 """
-FastAPI Web Application for Duolingo-style AI Problem Solver.
+CodingDuo - AI Intermediate Code Optimization Web Platform.
+Applies code optimization passes to Three-Address Code, SSA, and IR with tactile Duolingo aesthetic.
 """
 
 import os
 import uuid
 import logging
-from typing import Optional
+from typing import Optional, List, Dict
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, FileResponse
@@ -17,15 +18,14 @@ from bot.ai.factory import create_ai_solver
 from bot.memory.chat_memory import chat_memory
 from web.services.elevenlabs_service import elevenlabs_service
 
-logger = logging.getLogger("duo_solver_web")
+logger = logging.getLogger("codingduo")
 
 app = FastAPI(
-    title="DuoSolve - AI Problem Solver",
-    description="Duolingo-inspired interactive problem solving with Azure Brain and ElevenLabs voice.",
-    version="2.0.0",
+    title="CodingDuo - AI Intermediate Code Optimizer",
+    description="Interactive platform for applying compiler optimization techniques to Intermediate Code.",
+    version="2.1.0",
 )
 
-# Enable CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,86 +34,152 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Shared AI Solver
 ai_solver = create_ai_solver()
 
 
-class SolveRequest(BaseModel):
-    prompt: str
-    persona: Optional[str] = "solver"
-    chat_id: Optional[str] = None
+class OptimizeRequest(BaseModel):
+    code: str
+    pass_type: Optional[str] = "all_passes"
+    session_id: Optional[str] = None
 
 
 class TTSRequest(BaseModel):
     text: str
 
 
+# Preset Intermediate Code examples
+IR_PRESETS: Dict[str, Dict[str, str]] = {
+    "cse_const": {
+        "title": "Constant Folding & CSE",
+        "description": "Redundant calculations and constant expressions in Three-Address Code.",
+        "code": (
+            "# Expression: x = (2 * 4) + a; y = (2 * 4) + a + b\n"
+            "t1 = 2 * 4\n"
+            "t2 = t1 + a\n"
+            "x = t2\n"
+            "t3 = 2 * 4\n"
+            "t4 = t3 + a\n"
+            "t5 = t4 + b\n"
+            "y = t5"
+        ),
+    },
+    "loop_invariant": {
+        "title": "Loop Invariant Code Motion (LICM)",
+        "description": "Computations inside the loop that do not change across iterations.",
+        "code": (
+            "# while (i < 100) { a[i] = x + y; i++; }\n"
+            "L1:\n"
+            "  if i >= 100 goto L2\n"
+            "  t1 = x + y\n"
+            "  t2 = i * 4\n"
+            "  a[t2] = t1\n"
+            "  t3 = i + 1\n"
+            "  i = t3\n"
+            "  goto L1\n"
+            "L2:\n"
+            "  return"
+        ),
+    },
+    "dead_code": {
+        "title": "Dead Code & Variable Pruning",
+        "description": "Unused temporaries and dead assignments that never affect output.",
+        "code": (
+            "t1 = a * b\n"
+            "t2 = c + d\n"
+            "t3 = t1 + 10\n"
+            "dead_var = t2 * 5\n"
+            "unused_res = a + 1\n"
+            "return t3"
+        ),
+    },
+    "strength_reduction": {
+        "title": "Strength Reduction & Peephole",
+        "description": "Replacing expensive multiplications with additions or bitwise shifts.",
+        "code": (
+            "# Array index stepping in loop\n"
+            "t1 = i * 2\n"
+            "t2 = t1 + 0\n"
+            "t3 = x * 1\n"
+            "t4 = j * 8\n"
+            "ans = t2 + t3 + t4"
+        ),
+    },
+}
+
+
 @app.get("/api/health")
 async def health_check():
     return {
         "status": "healthy",
-        "provider": ai_solver.get_provider_name(),
+        "platform": "CodingDuo",
+        "optimizer": ai_solver.get_provider_name(),
         "model": ai_solver.get_model_name(),
         "elevenlabs_configured": web_config.is_elevenlabs_configured(),
     }
+
+
+@app.get("/api/presets")
+async def get_presets():
+    return IR_PRESETS
 
 
 @app.get("/api/stats")
 async def get_stats():
     mem_stats = chat_memory.get_stats()
     return {
-        "provider": ai_solver.get_provider_name(),
+        "platform": "CodingDuo",
+        "optimizer": ai_solver.get_provider_name(),
         "model": ai_solver.get_model_name(),
         "active_sessions": mem_stats["active_chats"],
-        "total_messages": mem_stats["total_messages"],
+        "total_optimizations": mem_stats["total_messages"] // 2,
         "streak_days": 5,
         "gems": 750,
-        "hearts": 5,
         "xp": 1420,
     }
 
 
+@app.post("/api/optimize")
 @app.post("/api/solve")
-async def solve_problem(req: SolveRequest):
-    if not req.prompt or not req.prompt.strip():
-        raise HTTPException(status_code=400, detail="Prompt cannot be empty.")
+async def optimize_code(req: OptimizeRequest):
+    if not req.code or not req.code.strip():
+        raise HTTPException(status_code=400, detail="Intermediate code cannot be empty.")
 
-    chat_id = req.chat_id or str(uuid.uuid4())
-    # Use hash of chat_id string as int key for memory manager
-    session_key = hash(chat_id) % 100000000
+    session_id = req.session_id or str(uuid.uuid4())
+    session_key = hash(session_id) % 100000000
 
-    persona = req.persona or web_config.default_persona
-    chat_memory.set_persona(session_key, persona)
+    pass_type = req.pass_type or "all_passes"
+    chat_memory.set_persona(session_key, pass_type)
     history = chat_memory.get_history(session_key)
 
     try:
         solution = await ai_solver.solve_text(
-            prompt=req.prompt.strip(),
+            prompt=req.code.strip(),
             history=history,
-            persona=persona,
+            persona=pass_type,
         )
 
-        chat_memory.add_message(session_key, "user", req.prompt.strip())
+        chat_memory.add_message(session_key, "user", req.code.strip())
         chat_memory.add_message(session_key, "assistant", solution)
 
         return {
             "success": True,
             "solution": solution,
-            "provider": ai_solver.get_provider_name(),
+            "optimizer": ai_solver.get_provider_name(),
             "model": ai_solver.get_model_name(),
-            "persona": persona,
-            "chat_id": chat_id,
+            "pass_type": pass_type,
+            "session_id": session_id,
         }
     except Exception as e:
-        logger.error(f"Error solving problem: {e}", exc_info=True)
+        logger.error(f"Error optimizing intermediate code: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
+@app.post("/api/optimize-image")
 @app.post("/api/solve-image")
-async def solve_image(
+async def optimize_image(
     file: UploadFile = File(...),
     caption: Optional[str] = Form(None),
-    persona: Optional[str] = Form("solver"),
+    pass_type: Optional[str] = Form("all_passes"),
 ):
     try:
         image_bytes = await file.read()
@@ -122,23 +188,22 @@ async def solve_image(
 
         mime_type = file.content_type or "image/jpeg"
 
-        # Solve using AI
         solution = await ai_solver.solve_image(
             image_bytes=image_bytes,
             mime_type=mime_type,
             caption=caption,
-            persona=persona,
+            persona=pass_type,
         )
 
         return {
             "success": True,
             "solution": solution,
-            "provider": ai_solver.get_provider_name(),
+            "optimizer": ai_solver.get_provider_name(),
             "model": ai_solver.get_model_name(),
-            "persona": persona,
+            "pass_type": pass_type,
         }
     except Exception as e:
-        logger.error(f"Error solving image: {e}", exc_info=True)
+        logger.error(f"Error optimizing image IR: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -151,19 +216,18 @@ async def text_to_speech(req: TTSRequest):
         audio_bytes = await elevenlabs_service.generate_speech_bytes(req.text)
         return Response(content=audio_bytes, media_type="audio/mpeg")
     except Exception as e:
-        logger.error(f"TTS synthesis error: {e}", exc_info=True)
-        raise HTTPException(status_code=500, detail=f"TTS generation failed: {e}")
+        logger.error(f"TTS error: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail=f"Voice narration failed: {e}")
 
 
 @app.post("/api/clear")
-async def clear_session(req: SolveRequest):
-    if req.chat_id:
-        session_key = hash(req.chat_id) % 100000000
+async def clear_session(req: OptimizeRequest):
+    if req.session_id:
+        session_key = hash(req.session_id) % 100000000
         chat_memory.clear_history(session_key)
-    return {"success": True, "message": "Memory cleared."}
+    return {"success": True, "message": "Optimization session reset."}
 
 
-# Mount static files
 static_dir = os.path.join(os.path.dirname(__file__), "static")
 app.mount("/static", StaticFiles(directory=static_dir), name="static")
 
@@ -173,4 +237,4 @@ async def serve_index():
     index_path = os.path.join(static_dir, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return HTMLResponse("<h1>DuoSolve Web App</h1><p>Static files loading...</p>")
+    return HTMLResponse("<h1>CodingDuo - AI Intermediate Code Optimizer</h1>")

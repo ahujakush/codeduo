@@ -3,30 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DuoSolve | AI Problem Solver (Duolingo Design Edition)</title>
+  <title>CodingDuo | AI Intermediate Code Optimizer</title>
 
-  <!-- Google Fonts: Nunito (Duolingo typography) -->
+  <!-- Google Fonts: Nunito (Vibrant Geometric Rounded Typography) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
 
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <!-- KaTeX for Beautiful Math Formula Rendering -->
+  <!-- KaTeX for Formal Semantics / Mathematics -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
   <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
 
-  <!-- Custom Duolingo Design Styles -->
+  <!-- CodingDuo Custom Tactile Design Styles -->
   <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body class="min-h-screen flex flex-col bg-[#F7F7F7] text-gray-800 antialiased selection:bg-green-100 selection:text-green-800">
 
-  <!-- Confetti Container -->
+  <!-- Confetti Celebration Container -->
   <div id="confetti-container" class="fixed inset-0 pointer-events-none z-50 overflow-hidden"></div>
 
-  <!-- Duolingo Top Header Navigation -->
+  <!-- Header Navigation -->
   <header class="sticky top-0 z-40 bg-white border-b-2 border-[#E5E5E5] px-4 lg:px-8 py-3 shadow-sm">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       
@@ -36,51 +36,51 @@
           <span class="text-2xl">🦉</span>
         </div>
         <div>
-          <h1 class="text-2xl font-black tracking-tight text-[#58CC02] leading-none">duosolve</h1>
-          <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-400">AI Problem Solver</span>
+          <h1 class="text-2xl font-black tracking-tight text-[#58CC02] leading-none">codingduo</h1>
+          <span class="text-[11px] font-extrabold uppercase tracking-wider text-gray-400">AI Intermediate Code Optimizer</span>
         </div>
       </div>
 
-      <!-- Duolingo Gamification Stats (Streak, Gems, Hearts, XP) -->
+      <!-- Gamification Stats (Streak, Gems, Instructions Saved, Efficiency) -->
       <div class="hidden md:flex items-center space-x-6 select-none font-extrabold text-sm">
         
-        <!-- Streak -->
-        <div class="flex items-center space-x-1.5 text-[#FF9600] hover:scale-105 transition transform cursor-default">
+        <!-- Optimization Streak -->
+        <div class="flex items-center space-x-1.5 text-[#FF9600] hover:scale-105 transition transform cursor-default" title="Optimization Streak">
           <span class="text-xl">🔥</span>
           <span id="stat-streak">5</span>
           <span class="text-xs text-gray-400 font-bold uppercase">days</span>
         </div>
 
         <!-- Gems -->
-        <div class="flex items-center space-x-1.5 text-[#1CB0F6] hover:scale-105 transition transform cursor-default">
+        <div class="flex items-center space-x-1.5 text-[#1CB0F6] hover:scale-105 transition transform cursor-default" title="Gems Earned">
           <span class="text-xl">💎</span>
           <span id="stat-gems">750</span>
         </div>
 
-        <!-- Hearts -->
-        <div class="flex items-center space-x-1.5 text-[#FF4B4B] hover:scale-105 transition transform cursor-default">
-          <span class="text-xl">❤️</span>
-          <span>5</span>
-        </div>
-
-        <!-- XP Level -->
-        <div class="flex items-center space-x-1.5 text-[#FFC800] hover:scale-105 transition transform cursor-default">
+        <!-- Instructions Saved (XP) -->
+        <div class="flex items-center space-x-1.5 text-[#FFC800] hover:scale-105 transition transform cursor-default" title="Compiler XP">
           <span class="text-xl">⚡</span>
           <span id="stat-xp">1,420 XP</span>
         </div>
+
+        <!-- Efficiency Score -->
+        <div class="flex items-center space-x-1.5 text-[#58CC02] hover:scale-105 transition transform cursor-default" title="Optimization Ratio">
+          <span class="text-xl">🎯</span>
+          <span>98%</span>
+        </div>
       </div>
 
-      <!-- Controls & Brain Status -->
+      <!-- Controls & Engine Status -->
       <div class="flex items-center space-x-3">
         <!-- Sound Toggle -->
         <button id="sound-toggle-btn" class="btn-3d btn-neutral text-xs py-2 px-3.5 font-extrabold rounded-xl hidden sm:inline-flex">
           🔊 Sound ON
         </button>
 
-        <!-- Active Brain Indicator Badge -->
-        <div class="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-blue-50 border-2 border-[#1CB0F6] text-[#1899D6] text-xs font-black uppercase tracking-wider shadow-[0_2px_0_#1899D6]">
-          <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-          <span>Azure gpt-5.4-mini</span>
+        <!-- Neutral AI Optimization Engine Badge (No Vendor Branding) -->
+        <div class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-green-50 border-2 border-[#58CC02] text-[#46A302] text-xs font-black uppercase tracking-wider shadow-[0_2px_0_#46A302]">
+          <span class="w-2.5 h-2.5 rounded-full bg-[#58CC02] animate-pulse"></span>
+          <span>AI Optimization Engine</span>
         </div>
       </div>
     </div>
@@ -89,28 +89,32 @@
   <!-- Main Container -->
   <main class="flex-1 max-w-5xl w-full mx-auto px-4 py-8">
     
-    <!-- Hero / Mascot Speech Row -->
+    <!-- Hero / Mascot Coaching Row -->
     <div class="flex flex-col sm:flex-row items-center sm:items-start gap-4 mb-8">
       
-      <!-- Interactive SVG Mascot -->
+      <!-- Interactive SVG Mascot (Bytey the Compiler Owl) -->
       <div class="flex-shrink-0 select-none">
         <svg id="mascot-svg" class="w-24 h-24 sm:w-28 sm:h-28 mascot-idle" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Owl Body -->
+          <!-- Body -->
           <rect x="15" y="18" width="70" height="72" rx="35" fill="#58CC02"/>
           <path d="M15 50C15 68 28 85 50 85C72 85 85 68 85 50" fill="#46A302"/>
-          <!-- Belly -->
+          <!-- Belly with Binary Hint -->
           <ellipse cx="50" cy="62" rx="22" ry="20" fill="#8CE834"/>
-          <!-- Big Owl Eyes -->
+          <!-- Compiler Owl Eyes -->
           <circle cx="36" cy="46" r="14" fill="white"/>
           <circle cx="64" cy="46" r="14" fill="white"/>
+          <!-- Coding Glasses Frame -->
+          <rect x="20" y="34" width="30" height="24" rx="8" stroke="#1F2937" stroke-width="3.5" fill="none"/>
+          <rect x="50" y="34" width="30" height="24" rx="8" stroke="#1F2937" stroke-width="3.5" fill="none"/>
+          <line x1="50" y1="44" x2="50" y2="44" stroke="#1F2937" stroke-width="3.5"/>
           <!-- Eye Pupils (Animated dynamically) -->
-          <circle id="eye-left" cx="36" cy="48" r="7" fill="#1F2937"/>
-          <circle id="eye-right" cx="64" cy="48" r="7" fill="#1F2937"/>
-          <circle cx="38" cy="45" r="2.5" fill="white"/>
-          <circle cx="66" cy="45" r="2.5" fill="white"/>
+          <circle id="eye-left" cx="36" cy="46" r="6" fill="#1F2937"/>
+          <circle id="eye-right" cx="64" cy="46" r="6" fill="#1F2937"/>
+          <circle cx="38" cy="43" r="2" fill="white"/>
+          <circle cx="66" cy="43" r="2" fill="white"/>
           <!-- Orange Beak -->
-          <polygon id="mascot-beak" points="44,54 56,54 50,64" fill="#FF9600"/>
-          <!-- Little Feet -->
+          <polygon id="mascot-beak" points="44,55 56,55 50,64" fill="#FF9600"/>
+          <!-- Feet -->
           <rect x="30" y="88" width="12" height="6" rx="3" fill="#FF9600"/>
           <rect x="58" y="88" width="12" height="6" rx="3" fill="#FF9600"/>
         </svg>
@@ -120,94 +124,94 @@
       <div class="flex-1 w-full">
         <div class="speech-bubble">
           <p id="mascot-speech" class="text-base sm:text-lg font-black text-gray-800 leading-snug">
-            Hi! I am Duo, your problem-solving buddy! What are we conquering today?
+            Welcome to CodingDuo! Paste your Intermediate Code (Three-Address Code, SSA, or Quadruples) and I'll optimize it pass-by-pass!
           </p>
         </div>
       </div>
     </div>
 
-    <!-- Mode Selector Tabs (Duolingo Style 3D Tabs) -->
+    <!-- Pass Selector Pills (Tactile 3D Buttons) -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6 select-none">
-      <button data-persona="solver" class="btn-3d btn-neutral active py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
-        <span>🧠</span>
-        <span>Step-by-Step</span>
+      <button data-pass="all_passes" class="btn-3d btn-neutral active py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
+        <span>🚀</span>
+        <span>All Passes</span>
       </button>
-      <button data-persona="math" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
-        <span>📐</span>
-        <span>Math Expert</span>
+      <button data-pass="cse" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
+        <span>🔁</span>
+        <span>Common Subexpr</span>
       </button>
-      <button data-persona="coder" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
-        <span>💻</span>
-        <span>Code & Debug</span>
+      <button data-pass="loop_opt" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
+        <span>🔄</span>
+        <span>Loop Invariants</span>
       </button>
-      <button data-persona="tutor" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
-        <span>🎓</span>
-        <span>Socratic Tutor</span>
+      <button data-pass="dead_code" class="btn-3d btn-neutral py-2.5 px-3 text-xs sm:text-sm font-extrabold flex items-center justify-center space-x-2">
+        <span>🧹</span>
+        <span>Dead Code (DCE)</span>
       </button>
     </div>
 
-    <!-- Mode Tabs: Text Solve vs Photo Solve -->
+    <!-- Tab Buttons: Text Editor vs Control Flow Graph Upload -->
     <div class="flex border-b-2 border-gray-200 mb-6 space-x-4">
-      <button data-tab="solve" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-[#58CC02] text-[#58CC02] flex items-center space-x-2">
-        <span>✍️ Type Problem</span>
+      <button data-tab="editor" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-[#58CC02] text-[#58CC02] flex items-center space-x-2">
+        <span>💻 IR Editor (TAC / SSA / Quadruples)</span>
       </button>
       <button data-tab="photo" class="font-black text-sm uppercase tracking-wider pb-3 border-b-4 border-transparent text-gray-400 hover:text-gray-600 flex items-center space-x-2">
-        <span>📸 Photo Homework</span>
+        <span>📸 Scan Flowgraph / Whiteboard</span>
       </button>
     </div>
 
-    <!-- Tab 1: Text Problem Solver View -->
-    <div id="tab-solve-view" class="card-duo p-6 sm:p-8 mb-8 bg-white">
+    <!-- Tab 1: Intermediate Code Editor View -->
+    <div id="tab-editor-view" class="card-duo p-6 sm:p-8 mb-8 bg-white">
       
-      <label for="problem-input" class="block font-black text-sm uppercase tracking-wider text-gray-500 mb-2">
-        Enter your question, equation, or code challenge:
-      </label>
+      <!-- Presets Toolbar -->
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <span class="font-black text-xs uppercase tracking-wider text-gray-400">Load Classical Compiler Optimization Presets:</span>
+        <div class="flex flex-wrap gap-2">
+          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-blue-50 text-[#1899D6] border border-blue-200 hover:bg-blue-100 transition" data-preset="cse_const">
+            🧮 Folding + CSE
+          </button>
+          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition" data-preset="loop_invariant">
+            🔄 Loop Invariant Motion
+          </button>
+          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 hover:bg-amber-100 transition" data-preset="dead_code">
+            🧹 Dead Temporaries
+          </button>
+          <button class="preset-chip text-xs font-black px-3 py-1.5 rounded-full bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition" data-preset="strength_reduction">
+            ⚡ Strength Reduction
+          </button>
+        </div>
+      </div>
 
-      <!-- Input Text Area -->
-      <textarea
-        id="problem-input"
-        rows="4"
-        placeholder="e.g. Solve 3x + 15 = 45, or write a Python function to reverse a binary tree, or explain quantum superposition..."
-        class="w-full p-4 rounded-2xl border-2 border-gray-200 focus:border-[#1CB0F6] focus:border-b-4 outline-none font-bold text-gray-800 placeholder-gray-400 transition text-base resize-none"
-      ></textarea>
-
-      <!-- Quick Suggestion Chips -->
-      <div class="mt-3 flex flex-wrap gap-2 items-center">
-        <span class="text-xs font-black uppercase text-gray-400 tracking-wider">Try:</span>
-        <button class="quick-chip text-xs font-extrabold px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition" data-query="Solve 3x + 15 = 45">
-          📐 3x + 15 = 45
-        </button>
-        <button class="quick-chip text-xs font-extrabold px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition" data-query="Write a Python fibonacci generator">
-          💻 Python Fibonacci
-        </button>
-        <button class="quick-chip text-xs font-extrabold px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition" data-query="Find the derivative of sin(x)*e^x">
-          ∫ Deriv sin(x)*e^x
-        </button>
-        <button class="quick-chip text-xs font-extrabold px-3 py-1.5 rounded-full bg-gray-100 hover:bg-gray-200 text-gray-700 transition" data-query="Explain how quicksort works in simple terms">
-          💡 Explain Quicksort
-        </button>
+      <!-- Code Textarea -->
+      <div class="relative">
+        <textarea
+          id="ir-code-input"
+          rows="8"
+          placeholder="# Enter Three-Address Code, Quadruples, or SSA form&#10;t1 = 4 * 2&#10;t2 = a + t1&#10;t3 = 4 * 2&#10;t4 = b + t3&#10;ans = t2 + t4"
+          class="w-full p-4 rounded-2xl border-2 border-gray-200 focus:border-[#1CB0F6] focus:border-b-4 outline-none font-mono text-sm leading-relaxed text-gray-800 placeholder-gray-400 transition resize-y bg-gray-50/50"
+        ></textarea>
       </div>
 
       <!-- Action Footer -->
       <div class="mt-6 flex flex-col sm:flex-row items-center justify-between gap-4 pt-4 border-t-2 border-gray-100">
         <div class="text-xs font-bold text-gray-400 flex items-center space-x-1">
           <span>⚡</span>
-          <span>Earn <strong>+20 XP</strong> per solution</span>
-          <span class="hidden sm:inline"> • Press <strong>Cmd+Enter</strong></span>
+          <span>Earn <strong>+25 XP</strong> on successful optimization</span>
+          <span class="hidden sm:inline"> • Press <strong>Cmd+Enter</strong> to run</span>
         </div>
 
-        <button id="solve-btn" class="btn-3d btn-green w-full sm:w-auto px-8 py-3.5 text-base flex items-center justify-center space-x-2">
-          <span>SOLVE PROBLEM</span>
+        <button id="optimize-btn" class="btn-3d btn-green w-full sm:w-auto px-8 py-3.5 text-base flex items-center justify-center space-x-2">
+          <span>APPLY OPTIMIZATION PASSES</span>
           <span class="text-xl">🚀</span>
         </button>
       </div>
     </div>
 
-    <!-- Tab 2: Photo Homework Upload View -->
+    <!-- Tab 2: Scan Flowgraph / Whiteboard View -->
     <div id="tab-photo-view" class="card-duo p-6 sm:p-8 mb-8 bg-white hidden">
-      <h3 class="font-black text-lg text-gray-800 mb-2">📸 Photo & Screenshot Homework Solver</h3>
+      <h3 class="font-black text-lg text-gray-800 mb-2">📸 Scan Control Flow Graph (CFG) or Whiteboard IR</h3>
       <p class="text-sm font-bold text-gray-500 mb-6">
-        Take a picture or drop a screenshot of any textbook problem, handwritten equation, or code bug.
+        Upload a photo or diagram of a Control Flow Graph, basic blocks, or handwritten Three-Address Code to extract and optimize it.
       </p>
 
       <!-- Drag & Drop Zone -->
@@ -216,7 +220,7 @@
           📷
         </div>
         <div>
-          <p class="font-extrabold text-base text-gray-700">Click to upload or drag & drop image here</p>
+          <p class="font-extrabold text-base text-gray-700">Click to upload or drag & drop CFG image</p>
           <p class="text-xs font-bold text-gray-400">PNG, JPG, JPEG, WEBP up to 10MB</p>
         </div>
         <input type="file" id="file-input" class="hidden" accept="image/*" />
@@ -227,57 +231,47 @@
         <img id="photo-preview" class="w-20 h-20 object-cover rounded-xl border-2 border-white shadow" src="" alt="Preview" />
         <div class="flex-1">
           <p id="photo-name" class="font-extrabold text-sm text-gray-800 truncate"></p>
-          <span class="text-xs font-bold text-green-600">✓ Image ready to solve</span>
+          <span class="text-xs font-bold text-green-600">✓ Flowgraph image ready for compiler analysis</span>
         </div>
       </div>
 
-      <!-- Optional Caption Input -->
-      <div class="mt-4">
-        <input
-          type="text"
-          id="photo-caption"
-          placeholder="Optional: Add a hint or specific question about this image..."
-          class="w-full p-3.5 rounded-xl border-2 border-gray-200 focus:border-[#1CB0F6] outline-none font-bold text-sm text-gray-800"
-        />
-      </div>
-
-      <!-- Photo Action Button -->
+      <!-- Action Button -->
       <div class="mt-6 flex justify-end">
-        <button id="photo-solve-btn" class="btn-3d btn-blue w-full sm:w-auto px-8 py-3.5 text-base flex items-center justify-center space-x-2">
-          <span>ANALYZE & SOLVE PHOTO</span>
+        <button id="photo-optimize-btn" class="btn-3d btn-blue w-full sm:w-auto px-8 py-3.5 text-base flex items-center justify-center space-x-2">
+          <span>OPTIMIZE DIAGRAM IR</span>
           <span class="text-xl">🔍</span>
         </button>
       </div>
     </div>
 
-    <!-- Loading Spinner / Mascot Thinking State -->
+    <!-- Optimization In Progress State -->
     <div id="loading-spinner" class="card-duo p-8 text-center bg-white mb-8 hidden flex-col items-center justify-center space-y-4">
       <div class="w-12 h-12 border-4 border-[#58CC02] border-t-transparent rounded-full animate-spin"></div>
-      <p class="font-black text-gray-700 text-base">Azure OpenAI Brain is reasoning through your problem...</p>
-      <p class="text-xs font-bold text-gray-400">Generating step-by-step mathematical logic</p>
+      <p class="font-black text-gray-700 text-base">Running compiler optimization pipeline...</p>
+      <p class="text-xs font-bold text-gray-400">Computing dataflow lattices, available expressions, and invariant hoisting</p>
     </div>
 
-    <!-- Solution Display Card -->
+    <!-- Optimization Results Display Card -->
     <div id="solution-card" class="card-duo p-6 sm:p-8 bg-white mb-12 hidden">
       
-      <!-- Solution Card Header -->
+      <!-- Results Card Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b-2 border-gray-100 gap-3">
         <div class="flex items-center space-x-2">
           <span class="text-2xl">✨</span>
           <div>
-            <span id="solution-badge" class="text-xs font-black tracking-wider uppercase text-green-600 bg-green-50 px-2.5 py-1 rounded-md border border-green-200">
-              SOLVED BY AZURE OPENAI BRAIN
+            <span id="solution-badge" class="text-xs font-black tracking-wider uppercase text-green-700 bg-green-50 px-3 py-1.5 rounded-lg border border-green-200">
+              OPTIMIZATION PASSES APPLIED
             </span>
           </div>
         </div>
 
-        <!-- ElevenLabs Voice Audio Player Pill -->
+        <!-- Voice Narration Button -->
         <div class="flex items-center space-x-2">
           <button id="tts-btn" class="btn-3d btn-blue py-2 px-4 text-xs font-black flex items-center space-x-2">
             <span>🔊</span>
-            <span id="tts-btn-text">Listen with ElevenLabs</span>
+            <span id="tts-btn-text">Explain Optimization Passes</span>
             
-            <!-- Sound Wave Bar Animation -->
+            <!-- Sound Wave Animation -->
             <div id="tts-wave" class="flex items-center space-x-1 h-5 ml-1 hidden">
               <div class="sound-wave-bar"></div>
               <div class="sound-wave-bar"></div>
@@ -288,42 +282,42 @@
         </div>
       </div>
 
-      <!-- Solution Body (KaTeX & Code Highlighted) -->
+      <!-- Optimized Output Content -->
       <div id="solution-content" class="mt-6 text-gray-800 text-base leading-relaxed font-semibold">
         <!-- Rendered dynamically -->
       </div>
 
-      <!-- Bottom Reward Banner -->
+      <!-- Reward Banner -->
       <div class="mt-8 p-4 rounded-2xl bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-          <span class="text-3xl">🎉</span>
+          <span class="text-3xl">🏆</span>
           <div>
-            <h4 class="font-black text-sm text-green-900">Lesson Step Complete!</h4>
-            <p class="text-xs font-bold text-green-700">You earned +20 XP and +5 Gems for solving this problem.</p>
+            <h4 class="font-black text-sm text-green-900">Optimization Milestone Achieved!</h4>
+            <p class="text-xs font-bold text-green-700">You earned +25 XP and reduced target register pressure.</p>
           </div>
         </div>
         <div class="font-black text-green-600 text-sm">
-          +20 XP
+          +25 XP
         </div>
       </div>
     </div>
 
   </main>
 
-  <!-- Duolingo Footer -->
+  <!-- Footer -->
   <footer class="bg-white border-t-2 border-[#E5E5E5] py-6 px-4 text-center text-xs font-extrabold text-gray-400">
     <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
       <div class="flex items-center space-x-2">
         <span class="text-base">🦉</span>
-        <span>DuoSolve • Powered by Azure OpenAI Brain & ElevenLabs Voice</span>
+        <span>CodingDuo • AI Intermediate Code Optimizer</span>
       </div>
       <div>
-        <span>Design inspired by <a href="https://blog.duolingo.com/hub/design/" target="_blank" class="text-[#58CC02] hover:underline">Duolingo Design Hub</a></span>
+        <span>Constant Folding • Common Subexpression Elimination • Loop Invariant Motion • Dead Code Elimination</span>
       </div>
     </div>
   </footer>
 
-  <!-- App Script -->
+  <!-- Client Script -->
   <script src="/static/js/app.js"></script>
 </body>
 </html>

@@ -1,12 +1,12 @@
 /**
- * DuoSolve - Interactive Web Application Logic
- * Duolingo Feather Design System, Web Audio Synthesizer & ElevenLabs Voice Narration
+ * CodingDuo - Interactive Web Application Logic
+ * Tactical 3D Design, Compiler Optimization Engine & Voice Narration
  */
 
 // --- Global State ---
 const state = {
-  currentPersona: "solver",
-  currentTab: "solve", // "solve" or "photo"
+  currentPass: "all_passes",
+  currentTab: "editor", // "editor" or "photo"
   soundEnabled: true,
   isGenerating: false,
   isPlayingAudio: false,
@@ -14,13 +14,13 @@ const state = {
   xp: 1420,
   streak: 5,
   gems: 750,
-  hearts: 5,
   selectedFile: null,
   activeSolutionText: "",
+  presets: {},
 };
 
-// --- Web Audio Synthesizer (Duolingo-style Sound Effects) ---
-class DuoAudioSynthesizer {
+// --- Web Audio Synthesizer (Tactile Sound Effects) ---
+class CodingDuoAudio {
   constructor() {
     this.ctx = null;
   }
@@ -38,8 +38,8 @@ class DuoAudioSynthesizer {
     const osc = this.ctx.createOscillator();
     const gain = this.ctx.createGain();
     osc.type = "sine";
-    osc.frequency.setValueAtTime(600, this.ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(300, this.ctx.currentTime + 0.05);
+    osc.frequency.setValueAtTime(650, this.ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(320, this.ctx.currentTime + 0.05);
     gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
     osc.connect(gain);
@@ -68,16 +68,16 @@ class DuoAudioSynthesizer {
   }
 }
 
-const duoAudio = new DuoAudioSynthesizer();
+const duoAudio = new CodingDuoAudio();
 
 // --- Mascot Expressions & Speech Bubble ---
 const MASCOT_PROMPTS = {
-  welcome: "Hi! I am Duo, your problem-solving buddy! What are we conquering today?",
-  thinking: "Calculating with Azure OpenAI Brain... hold tight!",
-  success: "Fantastic work! Here is the complete step-by-step solution!",
-  speaking: "Listen up! Reading the solution in ElevenLabs natural voice...",
-  photo: "Drop a photo of your homework or error and I'll examine it!",
-  error: "Oops, something went wrong. Let's give it another shot!",
+  welcome: "Welcome to CodingDuo! Paste your Three-Address Code or SSA form and I'll optimize it pass-by-pass!",
+  thinking: "Running dataflow analysis, folding constants & hoisting invariants...",
+  success: "Optimization passes complete! Check out the instruction count reduction below!",
+  speaking: "Explaining the transformation passes in clear spoken English...",
+  photo: "Drop a Control Flow Graph diagram or whiteboard Three-Address Code and I'll inspect it!",
+  error: "Encountered an optimization issue. Check your IR syntax and try again!",
 };
 
 function setMascotMood(mood, customMessage = null) {
@@ -85,26 +85,25 @@ function setMascotMood(mood, customMessage = null) {
   const speechEl = document.getElementById("mascot-speech");
   const leftEye = document.getElementById("eye-left");
   const rightEye = document.getElementById("eye-right");
-  const beak = document.getElementById("mascot-beak");
 
   if (!mascotEl || !speechEl) return;
 
-  mascotEl.className = "w-28 h-28 " + `mascot-${mood}`;
+  mascotEl.className = "w-24 h-24 sm:w-28 sm:h-28 " + `mascot-${mood}`;
   speechEl.textContent = customMessage || MASCOT_PROMPTS[mood] || MASCOT_PROMPTS.welcome;
 
   if (mood === "thinking") {
     leftEye.setAttribute("cy", "42");
     rightEye.setAttribute("cy", "42");
   } else if (mood === "speaking") {
+    leftEye.setAttribute("cy", "45");
+    rightEye.setAttribute("cy", "45");
+  } else {
     leftEye.setAttribute("cy", "46");
     rightEye.setAttribute("cy", "46");
-  } else {
-    leftEye.setAttribute("cy", "48");
-    rightEye.setAttribute("cy", "48");
   }
 }
 
-// --- Confetti Animation on Success ---
+// --- Confetti Celebration on Optimization ---
 function triggerConfetti() {
   const container = document.getElementById("confetti-container");
   if (!container) return;
@@ -136,29 +135,34 @@ function triggerConfetti() {
   setTimeout(() => { container.innerHTML = ""; }, 2500);
 }
 
-// --- Markdown, Math & Code Formatter ---
+// --- Render Formatted Solution ---
 function renderFormattedSolution(text) {
   // Convert Markdown code blocks with syntax highlighting & copy button
   let formatted = text.replace(/```([a-zA-Z]*)\n([\s\S]*?)```/g, (match, lang, code) => {
-    const validLang = lang ? lang.trim() : "plaintext";
+    const validLang = lang ? lang.trim() : "text";
     const encoded = encodeURIComponent(code.trim());
     return `
       <div class="my-4 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-900 text-white font-mono text-sm">
         <div class="flex items-center justify-between px-4 py-2 bg-gray-800 text-gray-300 text-xs uppercase tracking-wider font-bold">
-          <span>${validLang}</span>
-          <button onclick="copyCode(this, '${encoded}')" class="text-xs px-2.5 py-1 rounded bg-gray-700 hover:bg-gray-600 transition">Copy</button>
+          <span class="flex items-center space-x-1.5"><span class="text-green-400">●</span> <span>${validLang.toUpperCase()}</span></span>
+          <button onclick="copyCode(this, '${encoded}')" class="text-xs px-2.5 py-1 rounded bg-gray-700 hover:bg-gray-600 transition font-sans">Copy Code</button>
         </div>
-        <pre class="p-4 overflow-x-auto"><code>${escapeHtml(code.trim())}</code></pre>
+        <pre class="p-4 overflow-x-auto text-green-300 font-mono text-sm leading-relaxed"><code>${escapeHtml(code.trim())}</code></pre>
       </div>
     `;
   });
 
-  // Convert Bold **text**
+  // Convert Headers
+  formatted = formatted.replace(/^### (.*$)/gim, '<h3 class="text-lg font-black text-gray-900 mt-5 mb-2 pb-1 border-b border-gray-200">$1</h3>');
+  formatted = formatted.replace(/^## (.*$)/gim, '<h2 class="text-xl font-black text-gray-900 mt-6 mb-3 pb-1.5 border-b-2 border-gray-200">$1</h2>');
+
+  // Bold
   formatted = formatted.replace(/\*\*([^*]+)\*\*/g, '<strong class="font-extrabold text-gray-900">$1</strong>');
   
-  // Convert bullet lists
-  formatted = formatted.replace(/^\s*•\s*(.+)$/gm, '<li class="ml-4 list-disc">$1</li>');
-  formatted = formatted.replace(/^\s*\d+\.\s*(.+)$/gm, '<li class="ml-4 list-decimal font-medium">$1</li>');
+  // Lists
+  formatted = formatted.replace(/^\s*•\s*(.+)$/gm, '<li class="ml-4 list-disc text-gray-700">$1</li>');
+  formatted = formatted.replace(/^\s*-\s*(.+)$/gm, '<li class="ml-4 list-disc text-gray-700">$1</li>');
+  formatted = formatted.replace(/^\s*\d+\.\s*(.+)$/gm, '<li class="ml-4 list-decimal font-medium text-gray-700">$1</li>');
 
   // Paragraph breaks
   formatted = formatted.replace(/\n\n+/g, '<p class="my-3"></p>');
@@ -182,12 +186,12 @@ function copyCode(btn, encodedCode) {
   }, 2000);
 }
 
-// --- Problem Solving Action ---
-async function handleSolve() {
-  const inputEl = document.getElementById("problem-input");
-  const prompt = inputEl ? inputEl.value.trim() : "";
+// --- Optimization Action Handler ---
+async function handleOptimize() {
+  const inputEl = document.getElementById("ir-code-input");
+  const code = inputEl ? inputEl.value.trim() : "";
 
-  if (!prompt) {
+  if (!code) {
     inputEl.focus();
     return;
   }
@@ -198,68 +202,63 @@ async function handleSolve() {
   setMascotMood("thinking");
 
   try {
-    const res = await fetch("/api/solve", {
+    const res = await fetch("/api/optimize", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        prompt: prompt,
-        persona: state.currentPersona,
+        code: code,
+        pass_type: state.currentPass,
       }),
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Solving failed");
+    if (!res.ok) throw new Error(data.detail || "Optimization failed");
 
-    displaySolution(data.solution, data.provider, data.model);
+    displaySolution(data.solution, data.optimizer || "AI Optimization Engine");
     duoAudio.playSuccess();
     triggerConfetti();
     setMascotMood("success");
 
-    // Update stats
-    state.xp += 20;
+    state.xp += 25;
     state.gems += 5;
     updateStatsDisplay();
 
   } catch (err) {
     console.error(err);
     setMascotMood("error", `Error: ${err.message}`);
-    alert(`Could not solve: ${err.message}`);
+    alert(`Optimization error: ${err.message}`);
   } finally {
     state.isGenerating = false;
     updateUIState();
   }
 }
 
-// --- Photo Upload & Solve ---
-async function handlePhotoSolve() {
+// --- Photo / Flowgraph Upload & Optimize ---
+async function handlePhotoOptimize() {
   if (!state.selectedFile) {
-    alert("Please select or drop an image file first!");
+    alert("Please select or drop a Control Flow Graph or IR image first!");
     return;
   }
 
   duoAudio.playClick();
   state.isGenerating = true;
   updateUIState();
-  setMascotMood("thinking", "Analyzing photo with vision AI...");
-
-  const captionEl = document.getElementById("photo-caption");
-  const caption = captionEl ? captionEl.value.trim() : "";
+  setMascotMood("thinking", "Scanning CFG diagram and basic blocks...");
 
   const formData = new FormData();
   formData.append("file", state.selectedFile);
-  if (caption) formData.append("caption", caption);
-  formData.append("persona", state.currentPersona);
+  formData.append("pass_type", state.currentPass);
 
   try {
-    const res = await fetch("/api/solve-image", {
+    const res = await fetch("/api/optimize-image", {
       method: "POST",
       body: formData,
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.detail || "Image solving failed");
+    if (!res.ok) throw new Error(data.detail || "Image IR optimization failed");
 
-    displaySolution(data.solution, data.provider, data.model);
+    displaySolution(data.solution, data.optimizer || "AI Optimization Engine");
     duoAudio.playSuccess();
     triggerConfetti();
     setMascotMood("success");
@@ -270,14 +269,14 @@ async function handlePhotoSolve() {
   } catch (err) {
     console.error(err);
     setMascotMood("error", `Error: ${err.message}`);
-    alert(`Image solver error: ${err.message}`);
+    alert(`Image optimizer error: ${err.message}`);
   } finally {
     state.isGenerating = false;
     updateUIState();
   }
 }
 
-// --- ElevenLabs Text-to-Speech Playback ---
+// --- Voice Narration Playback ---
 async function handlePlayAudio() {
   if (!state.activeSolutionText) return;
 
@@ -288,14 +287,14 @@ async function handlePlayAudio() {
   if (state.isPlayingAudio && state.currentAudio) {
     state.currentAudio.pause();
     state.isPlayingAudio = false;
-    ttsText.textContent = "Listen Solution";
+    ttsText.textContent = "Explain Passes Aloud";
     soundWave.classList.add("hidden");
     setMascotMood("idle");
     return;
   }
 
   duoAudio.playClick();
-  ttsText.textContent = "Loading Voice...";
+  ttsText.textContent = "Synthesizing Voice...";
   ttsBtn.disabled = true;
 
   try {
@@ -307,7 +306,7 @@ async function handlePlayAudio() {
 
     if (!res.ok) {
       const err = await res.json();
-      throw new Error(err.detail || "TTS generation failed");
+      throw new Error(err.detail || "Voice narration failed");
     }
 
     const audioBlob = await res.blob();
@@ -321,21 +320,21 @@ async function handlePlayAudio() {
     state.currentAudio = audio;
     state.isPlayingAudio = true;
 
-    ttsText.textContent = "Pause Voice";
+    ttsText.textContent = "Pause Explanation";
     soundWave.classList.remove("hidden");
     ttsBtn.disabled = false;
     setMascotMood("speaking");
 
     audio.onended = () => {
       state.isPlayingAudio = false;
-      ttsText.textContent = "Listen Again";
+      ttsText.textContent = "Explain Passes Again";
       soundWave.classList.add("hidden");
       setMascotMood("idle");
     };
 
     audio.onerror = () => {
       state.isPlayingAudio = false;
-      ttsText.textContent = "Listen Solution";
+      ttsText.textContent = "Explain Passes Aloud";
       soundWave.classList.add("hidden");
       setMascotMood("idle");
     };
@@ -345,7 +344,7 @@ async function handlePlayAudio() {
   } catch (err) {
     console.error("TTS Error:", err);
     alert(`Voice narration error: ${err.message}`);
-    ttsText.textContent = "Listen Solution";
+    ttsText.textContent = "Explain Passes Aloud";
     ttsBtn.disabled = false;
     soundWave.classList.add("hidden");
     setMascotMood("idle");
@@ -353,7 +352,7 @@ async function handlePlayAudio() {
 }
 
 // --- Display Solution ---
-function displaySolution(solutionText, provider, model) {
+function displaySolution(solutionText, optimizer) {
   state.activeSolutionText = solutionText;
   const resultCard = document.getElementById("solution-card");
   const contentEl = document.getElementById("solution-content");
@@ -362,43 +361,26 @@ function displaySolution(solutionText, provider, model) {
   if (!resultCard || !contentEl) return;
 
   resultCard.classList.remove("hidden");
-  badgeEl.textContent = `SOLVED BY ${provider.toUpperCase()} (${model})`;
+  badgeEl.textContent = `OPTIMIZATION PASSES APPLIED (${optimizer})`;
   contentEl.innerHTML = renderFormattedSolution(solutionText);
-
-  // Trigger KaTeX math rendering if KaTeX is loaded
-  if (window.renderMathInElement) {
-    try {
-      window.renderMathInElement(contentEl, {
-        delimiters: [
-          { left: "$$", right: "$$", display: true },
-          { left: "\\[", right: "\\]", display: true },
-          { left: "$", right: "$", display: false },
-          { left: "\\(", right: "\\)", display: false },
-        ],
-        throwOnError: false,
-      });
-    } catch (e) {
-      console.warn("KaTeX rendering warning:", e);
-    }
-  }
 
   // Scroll smoothly to solution
   resultCard.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
-// --- UI Updates & Event Handlers ---
+// --- UI Updates ---
 function updateUIState() {
-  const solveBtn = document.getElementById("solve-btn");
-  const photoSolveBtn = document.getElementById("photo-solve-btn");
+  const optBtn = document.getElementById("optimize-btn");
+  const photoOptBtn = document.getElementById("photo-optimize-btn");
   const spinner = document.getElementById("loading-spinner");
 
-  if (solveBtn) {
-    solveBtn.disabled = state.isGenerating;
-    solveBtn.style.opacity = state.isGenerating ? "0.6" : "1";
+  if (optBtn) {
+    optBtn.disabled = state.isGenerating;
+    optBtn.style.opacity = state.isGenerating ? "0.6" : "1";
   }
-  if (photoSolveBtn) {
-    photoSolveBtn.disabled = state.isGenerating;
-    photoSolveBtn.style.opacity = state.isGenerating ? "0.6" : "1";
+  if (photoOptBtn) {
+    photoOptBtn.disabled = state.isGenerating;
+    photoOptBtn.style.opacity = state.isGenerating ? "0.6" : "1";
   }
   if (spinner) {
     spinner.style.display = state.isGenerating ? "flex" : "none";
@@ -411,8 +393,22 @@ function updateStatsDisplay() {
   document.getElementById("stat-streak").textContent = `${state.streak}`;
 }
 
+// --- Load Presets ---
+async function loadPresets() {
+  try {
+    const res = await fetch("/api/presets");
+    if (res.ok) {
+      state.presets = await res.json();
+    }
+  } catch (e) {
+    console.warn("Could not load presets:", e);
+  }
+}
+
 // --- Initialize Event Listeners ---
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  await loadPresets();
+
   // Tab Switching
   document.querySelectorAll("[data-tab]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -420,23 +416,40 @@ document.addEventListener("DOMContentLoaded", () => {
       const tab = btn.getAttribute("data-tab");
       state.currentTab = tab;
 
-      document.querySelectorAll("[data-tab]").forEach((b) => b.classList.remove("active"));
-      btn.classList.add("active");
+      document.querySelectorAll("[data-tab]").forEach((b) => b.classList.remove("border-[#58CC02]", "text-[#58CC02]"));
+      document.querySelectorAll("[data-tab]").forEach((b) => b.classList.add("border-transparent", "text-gray-400"));
+      
+      btn.classList.remove("border-transparent", "text-gray-400");
+      btn.classList.add("border-[#58CC02]", "text-[#58CC02]");
 
-      document.getElementById("tab-solve-view").classList.toggle("hidden", tab !== "solve");
+      document.getElementById("tab-editor-view").classList.toggle("hidden", tab !== "editor");
       document.getElementById("tab-photo-view").classList.toggle("hidden", tab !== "photo");
 
       setMascotMood(tab === "photo" ? "photo" : "welcome");
     });
   });
 
-  // Persona Switching
-  document.querySelectorAll("[data-persona]").forEach((btn) => {
+  // Pass Strategy Switching
+  document.querySelectorAll("[data-pass]").forEach((btn) => {
     btn.addEventListener("click", () => {
       duoAudio.playClick();
-      state.currentPersona = btn.getAttribute("data-persona");
-      document.querySelectorAll("[data-persona]").forEach((b) => b.classList.remove("active"));
+      state.currentPass = btn.getAttribute("data-pass");
+      document.querySelectorAll("[data-pass]").forEach((b) => b.classList.remove("active"));
       btn.classList.add("active");
+    });
+  });
+
+  // Preset Chips Loader
+  document.querySelectorAll(".preset-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      duoAudio.playClick();
+      const key = chip.getAttribute("data-preset");
+      const inputEl = document.getElementById("ir-code-input");
+      if (inputEl && state.presets[key]) {
+        inputEl.value = state.presets[key].code;
+        inputEl.focus();
+        setMascotMood("welcome", `Loaded ${state.presets[key].title}! Click 'Apply Optimization Passes' to run.`);
+      }
     });
   });
 
@@ -449,18 +462,6 @@ document.addEventListener("DOMContentLoaded", () => {
       duoAudio.playClick();
     });
   }
-
-  // Quick Chips
-  document.querySelectorAll(".quick-chip").forEach((chip) => {
-    chip.addEventListener("click", () => {
-      duoAudio.playClick();
-      const inputEl = document.getElementById("problem-input");
-      if (inputEl) {
-        inputEl.value = chip.getAttribute("data-query");
-        inputEl.focus();
-      }
-    });
-  });
 
   // File Upload Drag & Drop
   const dropZone = document.getElementById("drop-zone");
@@ -507,23 +508,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Solve Action Buttons
-  const solveBtn = document.getElementById("solve-btn");
-  if (solveBtn) solveBtn.addEventListener("click", handleSolve);
+  // Optimize Action Buttons
+  const optBtn = document.getElementById("optimize-btn");
+  if (optBtn) optBtn.addEventListener("click", handleOptimize);
 
-  const photoSolveBtn = document.getElementById("photo-solve-btn");
-  if (photoSolveBtn) photoSolveBtn.addEventListener("click", handlePhotoSolve);
+  const photoOptBtn = document.getElementById("photo-optimize-btn");
+  if (photoOptBtn) photoOptBtn.addEventListener("click", handlePhotoOptimize);
 
   const ttsBtn = document.getElementById("tts-btn");
   if (ttsBtn) ttsBtn.addEventListener("click", handlePlayAudio);
 
-  // Keyboard shortcut Ctrl/Cmd + Enter to solve
-  const problemInput = document.getElementById("problem-input");
-  if (problemInput) {
-    problemInput.addEventListener("keydown", (e) => {
+  // Keyboard shortcut Cmd/Ctrl + Enter
+  const irInput = document.getElementById("ir-code-input");
+  if (irInput) {
+    irInput.addEventListener("keydown", (e) => {
       if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
         e.preventDefault();
-        handleSolve();
+        handleOptimize();
       }
     });
   }

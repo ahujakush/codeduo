@@ -1,6 +1,6 @@
 """
-ElevenLabs Text-to-Speech (TTS) Voice Narration Service.
-Converts AI solutions into natural spoken audio stream with smart text cleaning.
+ElevenLabs Text-to-Speech (TTS) Voice Narration Service for CodingDuo.
+Provides natural spoken walkthroughs of compiler optimization passes.
 """
 
 import re
@@ -14,49 +14,55 @@ logger = logging.getLogger(__name__)
 
 def sanitize_for_speech(text: str, max_chars: int = 1200) -> str:
     """
-    Clean markdown formatting, code blocks, and LaTeX symbols
-    so the speech sounds conversational and natural.
+    Clean compiler markdown formatting and convert IR abbreviations
+    into conversational, natural spoken explanations.
     """
     if not text:
         return ""
 
     cleaned = text
 
-    # 1. Replace code blocks with spoken summaries
+    # Expand common compiler acronyms for speech clarity
+    cleaned = re.sub(r"\bTAC\b", "Three Address Code", cleaned)
+    cleaned = re.sub(r"\bCSE\b", "Common Subexpression Elimination", cleaned)
+    cleaned = re.sub(r"\bDCE\b", "Dead Code Elimination", cleaned)
+    cleaned = re.sub(r"\bLICM\b", "Loop Invariant Code Motion", cleaned)
+    cleaned = re.sub(r"\bCFG\b", "Control Flow Graph", cleaned)
+    cleaned = re.sub(r"\bSSA\b", "Static Single Assignment", cleaned)
+    cleaned = re.sub(r"\bIR\b", "Intermediate Representation", cleaned)
+
+    # Convert temporaries t1, t2 -> temporary 1, temporary 2
+    cleaned = re.sub(r"\bt(\d+)\b", r"temporary \1", cleaned)
+
+    # Convert code blocks into conversational summaries
     cleaned = re.sub(
         r"```[a-zA-Z]*\n([\s\S]*?)```",
-        r"Here is the code implementation. ",
+        r"Here is the optimized intermediate code. ",
         cleaned,
     )
-    # 2. Inline code
     cleaned = re.sub(r"`([^`]+)`", r"\1", cleaned)
 
-    # 3. Clean LaTeX math delimiters \( \), \[ \], $$ $$
-    cleaned = re.sub(r"\\[\(\[]\s*", "", cleaned)
-    cleaned = re.sub(r"\\[\)\]]\s*", "", cleaned)
-    cleaned = re.sub(r"\$\$?", "", cleaned)
-
-    # 4. Convert math operators into natural spoken English
-    cleaned = re.sub(r"(\w+)\s*\^\s*2\b", r"\1 squared", cleaned)
-    cleaned = re.sub(r"(\w+)\s*\^\s*3\b", r"\1 cubed", cleaned)
+    # Mathematical / IR operators
+    cleaned = re.sub(r"\s*<<\s*", " shifted left by ", cleaned)
+    cleaned = re.sub(r"\s*>>\s*", " shifted right by ", cleaned)
     cleaned = re.sub(r"\s*=\s*", " equals ", cleaned)
     cleaned = re.sub(r"\s*\+\s*", " plus ", cleaned)
     cleaned = re.sub(r"\s*-\s*", " minus ", cleaned)
-    cleaned = re.sub(r"\s*\*\s*", " times ", cleaned)
+    cleaned = re.sub(r"\s*\*\s*", " multiplied by ", cleaned)
     cleaned = re.sub(r"\s*/\s*", " divided by ", cleaned)
+    cleaned = re.sub(r"\s*➔\s*", " transforms to ", cleaned)
+    cleaned = re.sub(r"\s*->\s*", " transforms to ", cleaned)
 
-    # 5. Remove markdown headers, bold, bullets
+    # Strip markdown headers, bold, bullets
     cleaned = re.sub(r"^[#\*\-]+\s*", "", cleaned, flags=re.MULTILINE)
     cleaned = re.sub(r"\*\*([^*]+)\*\*", r"\1", cleaned)
     cleaned = re.sub(r"\*([^*]+)\*", r"\1", cleaned)
-    cleaned = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", cleaned)
 
-    # 6. Normalize whitespace
+    # Normalize whitespace
     cleaned = re.sub(r"\s+", " ", cleaned).strip()
 
-    # 7. Truncate if exceeds character limit
     if len(cleaned) > max_chars:
-        cleaned = cleaned[:max_chars].rsplit(" ", 1)[0] + "... and that completes the solution."
+        cleaned = cleaned[:max_chars].rsplit(" ", 1)[0] + "... and that completes the compiler optimization pass."
 
     return cleaned
 
@@ -82,7 +88,7 @@ class ElevenLabsTTSService:
 
         speech_text = sanitize_for_speech(text)
         if not speech_text:
-            speech_text = "No solution text to read aloud."
+            speech_text = "No optimization details to read aloud."
 
         headers = {
             "xi-api-key": self.api_key,
@@ -109,5 +115,4 @@ class ElevenLabsTTSService:
             return resp.content
 
 
-# Global service singleton
 elevenlabs_service = ElevenLabsTTSService()

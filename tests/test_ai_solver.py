@@ -1,66 +1,60 @@
 """
-Unit tests for AI Solvers and Solver Factory.
+Unit tests for CodingDuo AI Optimization Solvers.
 """
 
 import pytest
 from bot.config import BotConfig
-from bot.ai.base import PERSONA_PROMPTS
+from bot.ai.base import COMPILER_PERSONA_PROMPTS
 from bot.ai.mock_solver import MockAISolver
 from bot.ai.factory import create_ai_solver
 
 
 @pytest.mark.asyncio
-async def test_mock_solver_linear_equation():
+async def test_mock_solver_constant_folding():
     solver = MockAISolver()
-    solution = await solver.solve_text("Solve 2x + 5 = 15")
-    assert "Math Equation Solved" in solution
-    assert "[5]" in solution or "5" in solution
+    tac = "t1 = 4 * 2\nt2 = a + t1\nans = t2"
+    solution = await solver.solve_text(tac)
+    assert "Optimized Intermediate Code" in solution
+    assert "Constant Folding" in solution
+    assert "t1 = 8" in solution
 
 
 @pytest.mark.asyncio
-async def test_mock_solver_arithmetic():
+async def test_mock_solver_cse():
     solver = MockAISolver()
-    solution = await solver.solve_text("Calculate 15 * 4 + 20")
-    assert "Arithmetic Computation" in solution
-    assert "80" in solution
+    tac = "t1 = a + b\nt2 = a + b\nans = t1 + t2"
+    solution = await solver.solve_text(tac)
+    assert "Common Subexpression Elimination" in solution
+    assert "t2 = t1" in solution
 
 
 @pytest.mark.asyncio
-async def test_mock_solver_coding():
+async def test_mock_solver_strength_reduction():
     solver = MockAISolver()
-    solution = await solver.solve_text("How to write a fibonacci function in python?")
-    assert "Fibonacci Sequence" in solution
-    assert "def fibonacci" in solution
-
-
-@pytest.mark.asyncio
-async def test_mock_solver_fallback():
-    solver = MockAISolver()
-    solution = await solver.solve_text("What is the capital of France?")
-    assert "Offline Solver Mode" in solution
-    assert "GEMINI_API_KEY" in solution
+    tac = "t1 = x * 2\nans = t1"
+    solution = await solver.solve_text(tac)
+    assert "Strength Reduction" in solution
+    assert "x << 1" in solution
 
 
 @pytest.mark.asyncio
 async def test_mock_solver_image():
     solver = MockAISolver()
-    img_data = b"fake_image_bytes"
-    solution = await solver.solve_image(img_data, mime_type="image/png", caption="Help me solve")
-    assert "Image Received - Offline Mode" in solution
-    assert "fake_image_bytes" not in solution
-    assert "image/png" in solution
+    img_data = b"fake_flowgraph_bytes"
+    solution = await solver.solve_image(img_data, mime_type="image/png", caption="Optimize CFG")
+    assert "IR Flowgraph" in solution
+    assert "Optimized Basic Blocks" in solution
 
 
 def test_persona_system_prompts():
     solver = MockAISolver()
-    for persona in ["solver", "coder", "math", "tutor", "concise"]:
+    for persona in ["all_passes", "cse", "loop_opt", "dead_code", "peephole"]:
         prompt = solver.get_system_prompt(persona)
         assert len(prompt) > 20
-        assert prompt == PERSONA_PROMPTS[persona]
+        assert prompt == COMPILER_PERSONA_PROMPTS[persona]
 
 
 def test_factory_fallback_to_mock():
-    # Empty config explicitly disabling all keys
     cfg = BotConfig(
         telegram_bot_token="test",
         ai_provider="mock",
@@ -72,3 +66,4 @@ def test_factory_fallback_to_mock():
     )
     solver = create_ai_solver(cfg)
     assert isinstance(solver, MockAISolver)
+    assert solver.get_provider_name() == "AI Optimization Engine"
